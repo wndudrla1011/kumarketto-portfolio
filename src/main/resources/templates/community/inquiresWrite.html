@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja-JP" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <head>
+        <meta charset="UTF-8" />
+        <title>お問い合わせ作成</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <link rel="stylesheet" th:href="@{/css/common/main.css}" />
+        <link rel="stylesheet" th:href="@{/css/common/header.css}" />
+        <link rel="stylesheet" th:href="@{/css/common/footer.css}" />
+        <link rel="stylesheet" th:href="@{/css/community/inquires.css}" />
+    </head>
+    <body>
+        <!-- header -->
+        <div th:replace="~{fragments/header :: commonHeader}"></div>
+
+        <main class="main-content">
+            <section class="inquiry-container">
+                <div class="inquiry-header">
+                    <h1>お問い合わせ作成</h1>
+                </div>
+
+                <form class="inquiry-form" action="/inquires/inquiresWrite" method="post" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="title">件名</label>
+                        <input type="text" id="title" name="title" placeholder="お問い合わせ内容を詳しく入力してください。" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="userNoDisplay">投稿者</label>
+
+                        <input type="text"
+                               id="userNoDisplay"
+                               th:value="${currentUsername}"
+                               readonly
+                               style="background-color: #f5f5f5;" />
+
+                        <input type="hidden"
+                               name="userNo"
+                               th:value="${currentUserNo}" />
+                    </div>
+                    <div class="form-group">
+                        <label for="content">内容</label>
+                        <textarea
+                            id="content"
+                            name="content"
+                            placeholder="お問い合わせ内容を詳しく入力してください。"
+                            required
+                        ></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="upload">ファイル添付（任意）</label>
+                        <input type="file" id="upload" name="upload" accept=".jpg,.jpeg,.png,.gif,.pdf" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>公開可否</label>
+                        <div class="radio-group">
+                            <label> <input type="radio" name="isPublic" value="PUBLIC" checked /> 公開 </label>
+                            <label> <input type="radio" name="isPublic" value="PRIVATE" /> 非公開 </label>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-submit">作成する</button>
+                        <button type="button" class="btn-cancel" onclick="location.href='/inquires'">キャンセル</button>
+                    </div>
+                </form>
+            </section>
+        </main>
+
+        <!-- footer -->
+        <div th:replace="~{fragments/footer :: commonFooter}"></div>
+    </body>
+</html>

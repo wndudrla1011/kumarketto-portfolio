@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja-JP" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="stylesheet" th:href="@{/css/reports/reportRequest.css}" />
+        <title>Title</title>
+        <script th:src="@{/js/jquery-3.7.1.min.js}"></script>
+    </head>
+    <body>
+        <div class="form-container">
+            <div class="form-header">
+                <h1>商品を申告する</h1>
+            </div>
+            <form id="report-form" th:action="@{/report/reportRequest}" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="productId" th:value="${productId}" />
+
+                <div class="form-group">
+                    <label for="reportReason">通報理由</label>
+                    <select id="reportReason" name="reportReason" class="form-control">
+                        <option
+                            th:each="reason : ${T(org.dsa11.team1.kumarketto.domain.enums.ReportReason).values()}"
+                            th:value="${reason}"
+                            th:text="${reason.reportReason}"
+                        ></option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">備考（自由入力）</label>
+                    <textarea id="description" name="description" class="form-control" maxlength="200"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>ファイル添付 (任意)</label>
+                    <div class="file-input-group">
+                        <div class="file-name">ファイルを選択...</div>
+                        <div class="file-attach-btn">添付</div>
+                        <input type="file" name="image" accept="image/jpeg, image/png" />
+                    </div>
+                </div>
+
+                <div class="buttons">
+                    <button type="button" id="cancel-btn" class="btn btn-secondary">キャンセル</button>
+                    <button type="submit" id="submit-btn" class="btn btn-primary">通報</button>
+                </div>
+            </form>
+        </div>
+
+        <script>
+            $(document).ready(function () {
+                const $select = $('select[name="reportReason"]');
+                const $textarea = $('textarea[name="description"]');
+
+                // 상태 갱신 함수
+                function updateTextareaState() {
+                    if ($select.val() === "OTHER") {
+                        $textarea.prop("readonly", false);
+                        $textarea.attr("placeholder", "");
+                    } else {
+                        $textarea.prop("readonly", true);
+                        $textarea.attr("placeholder", "「その他」を選んだ場合のみ作成可能です。");
+                        $textarea.val("");
+                    }
+                }
+
+                // 페이지 로드 시 초기 상태
+                updateTextareaState();
+
+                // select 변경 시
+                $select.change(updateTextareaState);
+
+                <!-- 파일 첨부 시 파일명 표시 -->
+                $('input[type="file"]').on("change", function () {
+                    const fileName = this.files[0] ? this.files[0].name : "ファイルを選択...";
+                    $(this).closest(".file-input-group").find(".file-name").text(fileName);
+                });
+
+                $("#report-form").submit(function (e) {
+                    e.preventDefault();
+
+                    if ($select.val() === "OTHER" && (!$textarea.val() || $textarea.val().trim() === "")) {
+                        alert("「その他」を選んだ場合は自由入力欄を必ず記入してください。");
+                        return;
+                    }
+
+                    const file = $('input[type="file"]').prop("files")[0];
+                    const allowedFileType = ["jpg", "jpeg", "png"];
+
+                    if (file) {
+                        const fileExt = file.name.split(".").pop().toLowerCase();
+                        if (!allowedFileType.includes(fileExt)) {
+                            alert("JPG、JPEG、PNG のファイルのみアップロード可能です。");
+                            return;
+                        }
+                        if (file.size > 10 * 1024 * 1024) {
+                            alert("ファイルは10MB以内で選択してください。");
+                            return;
+                        }
+                    }
+
+                    let formData = new FormData(this);
+                    $.ajax({
+                        url: $(this).attr("action"),
+                        method: "POST",
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (result) {
+                            if (result === "success") {
+                                alert("通報完了");
+                                window.close();
+                            } else {
+                                alert(result); // 신고 실패 메시지 (from 서버)
+                            }
+                        },
+                        error: function () {
+                            alert("サーバーエラー");
+                        },
+                    });
+                });
+
+                $("#cancel-btn").click(function () {
+                    window.close();
+                });
+            });
+        </script>
+    </body>
+</html>

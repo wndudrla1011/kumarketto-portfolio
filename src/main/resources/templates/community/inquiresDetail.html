@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ja-JP" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8" />
+    <title>お問い合わせ詳細</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" th:href="@{/css/common/main.css}" />
+    <link rel="stylesheet" th:href="@{/css/common/header.css}" />
+    <link rel="stylesheet" th:href="@{/css/common/footer.css}" />
+    <link rel="stylesheet" th:href="@{/css/community/inquires.css}" />
+</head>
+<body>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+
+<main class="main-content">
+    <section class="inquiry-container">
+        <div class="inquiry-header">
+            <h1>お問い合わせ詳細</h1>
+        </div>
+
+        <table class="inquiry-view-table">
+            <tr>
+                <th>件名</th>
+                <td th:text="${data.title}">配送期間に関するお問い合わせ</td>
+            </tr>
+            <tr>
+                <th>投稿者</th>
+                <td th:text="${data.userNo.userId}">kuma</td>
+            </tr>
+            <tr>
+                <th>作成日</th>
+                <td th:text="${#temporals.format(data.createdDate, 'yyyy-MM-dd HH:mm')}">2025-08-26 14:30</td>
+            </tr>
+            <tr>
+                <th>内容</th>
+                <td class="content-cell" th:text="${data.content}">
+                    결제 후 평균 배송 기간이 얼마나 걸리나요?
+                </td>
+            </tr>
+            <tr>
+                <th>添付ファイル</th>
+                <td class="attachment-info">
+                    <div th:if="${data.attachmentUrl != null}">
+                        <a
+                                th:href="@{|/inquires/download/${data.inquiryId}|}"
+                                th:text="${attachmentName != null ? attachmentName : '添付ファイルをダウンロード'}"
+                        >
+                            <i class="fa-solid fa-paperclip"></i> 添付ファイルをダウンロード
+                        </a>
+                    </div>
+                    <div th:unless="${data.attachmentUrl != null}">添付ファイルはありません</div>
+                </td>
+            </tr>
+            <tr>
+                <th>公開可否</th>
+                <td th:text="${data.isPublic.name() == 'PUBLIC'} ? '公開' : '非公開'">公開</td>
+            </tr>
+        </table>
+
+        <div class="form-actions">
+            <th:block th:if="${#authorization.expression('hasRole(''ADMIN'')') or (#authorization.expression('isAuthenticated()') and #authentication.principal.username == data.userNo.userId)}">
+                <button
+                        type="button"
+                        class="btn-submit"
+                        th:onclick="|location.href='@{/inquires/inquiresedit/{id}(id=${data.inquiryId})}'|"
+                >
+                    修正
+                </button>
+                <button
+                        type="button"
+                        class="btn-delete"
+                        th:onclick="|if(confirm('本当に削除しますか？')) location.href='@{/inquires/inquiresdelete/{id}(id=${data.inquiryId})}'|"
+                >
+                    削除
+                </button>
+            </th:block>
+            <button type="button" class="btn-cancel" onclick="location.href='/inquires'">一覧へ戻る</button>
+        </div>
+
+        <section id="admin-replies" class="reply-section"
+                 th:if="${#authorization.expression('hasRole(''ADMIN'')') or !#lists.isEmpty(inquiries)}">
+            <h3><i class="fa-solid fa-user-shield"></i> 管理者の回答</h3>
+            <table class="reply-table" th:if="${!#lists.isEmpty(inquiries)}">
+                <tbody th:each="reply, stat : ${inquiries}">
+                <tr>
+                    <td class="reply-author">管理者</td>
+                    <td class="reply-content" th:text="${reply.answerContent}">管理者の回答内容です。</td>
+                    <td class="reply-actions action-links" sec:authorize="hasRole('ADMIN')">
+                        <a href="#" class="reply-edit-btn" th:data-id="${reply.answerId}" onclick="return false;">修正</a>
+                        <a th:href="@{|/inquires/detail/adminreply/${data.inquiryId}/delete-${reply.answerId}|}" onclick="return confirm('本当に削除しますか？');">削除</a>
+                    </td>
+                </tr>
+                <tr class="reply-edit-form" th:id="|edit-${reply.answerId}|" style="display: none">
+                    <td colspan="3">
+                        <form method="post" th:action="@{|/inquires/detail/adminreply/${data.inquiryId}/edit-${reply.answerId}|}">
+                            <textarea name="answerContent" rows="4" th:text="${reply.answerContent}" required></textarea>
+                            <div class="form-actions">
+                                <button type="submit" class="btn-submit">保存</button>
+                                <button type="button" class="btn-cancel reply-cancel-btn" th:data-id="${reply.answerId}">キャンセル</button>
+                            </div>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="admin-reply-form" class="reply-section" sec:authorize="hasRole('ADMIN')">
+            <h3>返信を書く</h3>
+            <form method="post" th:action="@{/inquires/detail/adminreply}">
+                <input type="hidden" name="inquiryId" th:value="${data.inquiryId}" />
+                <textarea id="replyContent" name="answerContent" rows="5" placeholder="返信内容を入力してください" required></textarea>
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit">返信を登録</button>
+                </div>
+            </form>
+        </section>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: commonFooter}"></div>
+
+<script>
+
+    document.addEventListener("click", function (e) {
+        // '수정' 버튼 클릭 시
+        if (e.target.classList.contains("reply-edit-btn")) {
+            e.preventDefault();
+            const id = e.target.getAttribute("data-id");
+            const formRow = document.getElementById("edit-" + id);
+            if (formRow) {
+                formRow.style.display = "table-row"; // 숨겨진 폼 보이기
+            }
+        }
+        // '취소' 버튼 클릭 시
+        if (e.target.classList.contains("reply-cancel-btn")) {
+            const id = e.target.getAttribute("data-id");
+            const formRow = document.getElementById("edit-" + id);
+            if (formRow) {
+                formRow.style.display = "none"; // 폼 다시 숨기기
+            }
+        }
+    });
+</script>
+</body>
+</html>

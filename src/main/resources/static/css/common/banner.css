@@ -1,0 +1,95 @@
+.banner-container {
+    width: 100%;
+    margin-top: 24px;
+    margin-bottom: 24px;
+    position: relative;
+}
+
+.banner-carousel {
+    display: flex;
+    overflow-x: auto; /* 핵심: 가로 스크롤 활성화 */
+    scroll-snap-type: x mandatory; /* 핵심: 스크롤이 아이템에 자석처럼 붙음 */
+    scroll-behavior: smooth; /* 부드러운 스크롤 효과 */
+    -ms-overflow-style: none; /* IE, Edge 스크롤바 숨기기 */
+    scrollbar-width: none; /* Firefox 스크롤바 숨기기 */
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+.banner-carousel::-webkit-scrollbar {
+    display: none; /* Chrome, Safari 스크롤바 숨기기 */
+}
+
+.banner-item {
+    flex: 0 0 100%; /* 각 아이템이 캐러셀 전체 너비를 차지 */
+    width: 100%;
+    height: 280px; /* 배너 높이 */
+    scroll-snap-align: start; /* 핵심: 아이템의 시작 부분이 스냅 지점 */
+    background-size: cover;
+    background-position: center;
+}
+
+/* --- 예시 배너 이미지 및 스타일 --- */
+/* 실제 이미지 URL로 교체해서 사용하세요 */
+.banner-item:nth-child(1) {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
+        url("https://images.pexels.com/photos/7679720/pexels-photo-7679720.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1");
+}
+.banner-item:nth-child(2) {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
+        url("https://images.pexels.com/photos/271816/pexels-photo-271816.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1");
+}
+.banner-item:nth-child(3) {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
+        url("https://images.pexels.com/photos/356056/pexels-photo-356056.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1");
+}
+
+/* 네비게이션 버튼 (이전과 거의 동일) */
+.banner-nav-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.4);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    z-index: 10;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
+}
+.banner-nav-button:hover {
+    background-color: rgba(0, 0, 0, 0.6);
+}
+.banner-nav-button.prev {
+    left: 16px;
+}
+.banner-nav-button.next {
+    right: 16px;
+}
+
+/* 현재 배너 위치 표시 점(dot) */
+.banner-dots {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+}
+
+.banner-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.5);
+    transition: background-color 0.3s;
+}
+
+.banner-dot.active {
+    background-color: white;
+}

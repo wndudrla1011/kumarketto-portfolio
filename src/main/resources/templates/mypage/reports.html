@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>クマケット | マイページ（通報/制裁履歴）</title>
+
+    <link rel="stylesheet" th:href="@{/css/common/main.css}" />
+    <link rel="stylesheet" th:href="@{/css/common/header.css}" />
+    <link rel="stylesheet" th:href="@{/css/common/mypage.css}" />
+    <link rel="stylesheet" th:href="@{/css/common/sidebar.css}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+        /* 섹션/테이블/푸터 레이아웃 동일화 */
+        .section {
+            background:#fff;
+            border:1px solid #EEE;
+            border-radius:12px;
+            box-shadow:0 2px 8px rgba(0,0,0,.06);
+            padding:12px;
+            margin-bottom:14px;
+        }
+        .section h2{ margin:2px 0 10px; font-size:16px; font-weight:800; }
+        .desc{ font-size:12.5px; color:#777; margin-bottom:6px; }
+
+        .table-wrap{ border:1px solid #EEE; border-radius:10px; overflow:hidden; background:#fff; }
+        table{ width:100%; border-collapse:collapse; table-layout:fixed; }
+        thead th{
+            background:#FFF1EA; color:#5d473e; font-weight:800; font-size:13px;
+            border-bottom:1px solid #EEE; padding:10px 8px; text-align:left;
+        }
+        tbody td{ padding:10px 8px; font-size:13px; color:#333; border-bottom:1px dashed #EEE; }
+        tbody tr:last-child td{ border-bottom:none; }
+        .footerbar{ display:flex; justify-content:center; margin-top:10px; }
+        .more {
+            padding:9px 14px;
+            border:1px solid #EEE;
+            border-radius:999px;
+            background:#fff;
+            font-weight:700;
+            font-size:13px;
+            color:#333;          /* 클릭 가능하게 색 변경 */
+            cursor:pointer;      /* 포인터로 바꾸기 */
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .more:hover {
+            background:#FF8A65;
+            color:#fff;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<div th:replace="fragments/header :: commonHeader"></div>
+
+<!-- 페이지 레이아웃 -->
+<div class="page">
+
+    <!-- 좌측 사이드바 -->
+    <aside th:replace="fragments/sidebar :: commonSidebar"></aside>
+
+    <!-- 우측 컨텐츠 -->
+    <div class="mypage-wrap">
+        <!-- 신고 -->
+        <section class="section">
+            <h2>通報履歴</h2>
+            <div class="table-wrap">
+                <table aria-label="report table">
+                    <thead>
+                    <tr>
+                        <th style="width:22%">通報対象</th>
+                        <th>通報理由</th>
+                        <th style="width:140px">通報日</th>
+                        <th style="width:120px">結果</th>
+                    </tr>
+                    </thead>
+                    <tbody id="reportTbody"></tbody>
+                </table>
+            </div>
+            <div class="footerbar"><button class="more" style = "inline-block" data-target="report">もっと見る</button></div>
+        </section>
+
+        <!-- 제재 -->
+        <section class="section">
+            <h2>ペナルティ履歴</h2>
+            <div class="table-wrap">
+                <table aria-label="sanction table">
+                    <thead>
+                    <tr>
+                        <th style="width:22%">ペナルティ対象</th>
+                        <th>ペナルティ理由</th>
+                        <th style="width:140px">適用日</th>
+                        <th style="width:120px">結果</th>
+                    </tr>
+                    </thead>
+                    <tbody id="sanctionTbody"></tbody>
+                </table>
+            </div>
+            <div class="footerbar"><button class="more" style = "inline-block" disabled = "false" data-target="sanction">もっと見る</button></div>
+        </section>
+    </div>
+
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const tables = {
+            report: {
+                tbody: document.getElementById("reportTbody"),
+                page: 0,
+                url: "/myPage/reports/report"
+            },
+            sanction: {
+                tbody: document.getElementById("sanctionTbody"),
+                page: 0,
+                url: "/myPage/reports/sanction"
+            }
+        }
+        const size = 5;
+
+        async function loadChunk(target, btn) {
+            const table = tables[target];
+            const res = await fetch(`${table.url}?page=${table.page}&size=${size}`);
+            const data = await res.json();
+
+            const content = data.content;
+            const last = data.last;
+
+            content.forEach(item => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>
+                        <a href="/product/detail/${item.pid}">
+                            ${item.title.length > 8 ? item.title.substring(0, 8) + '...' : item.title}
+                        </a>
+                    </td>
+                    <td>${item.reportReason} </td>
+                    <td>${item.modifiedDate ? item.modifiedDate.substring(0, 10) : ''}</td>
+                    <td>${item.actionType ? item.actionType : '対応前'}</td>
+                `;
+                table.tbody.appendChild(tr);
+            });
+
+            if(last && btn) {
+                btn.disabled = true;
+                btn.style.display = "none";
+            } else {
+                table.page++;
+            }
+        }
+
+        document.querySelectorAll(".more").forEach(btn => {
+            const target = btn.dataset.target;
+            btn.addEventListener("click", () => loadChunk(target, btn));
+            loadChunk(target, btn);
+        })
+    });
+</script>
+</body>
+</html>

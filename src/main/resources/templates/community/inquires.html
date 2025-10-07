@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja-JP" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">x`
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>お問い合わせ</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <link rel="stylesheet" th:href="@{/css/common/main.css}" />
+        <link rel="stylesheet" th:href="@{/css/common/header.css}" />
+        <link rel="stylesheet" th:href="@{/css/common/footer.css}" />
+        <link rel="stylesheet" th:href="@{/css/community/inquires.css}" />
+    </head>
+    <body>
+        <!-- header -->
+        <div th:replace="~{fragments/header :: commonHeader}"></div>
+
+        <main class="main-content">
+
+            <section class="inquiry-container">
+                <div class="inquiry-header">
+                    <h1>お問い合わせ</h1>
+                </div>
+
+                <div class="inquiry-controls">
+                    <a th:href="@{/inquires/inquiresWrite}" class="write-btn">
+                        <i class="fa-solid fa-pen"></i> お問い合わせ
+                    </a>
+                </div>
+
+                <table class="inquiry-table">
+                    <thead>
+                        <tr>
+                            <th class="col-id">番号</th>
+                            <th class="col-title">件名</th>
+                            <th class="col-author">投稿者</th>
+                            <th class="col-date">作成日</th>
+                            <th class="col-status">回答状況</th>
+                            <th class="col-public">公開可否</th>
+                            <th class="col-actions" sec:authorize="hasRole('ADMIN')">管理</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${paging.isEmpty()}">
+                        <td colspan="7">登録されたお問い合わせはありません。</td>
+                    </tr>
+                    <tr th:each="num : ${paging.content}">
+                        <td th:text="${num.inquiryId}">1</td>
+                        <td class="col-title inquiry-title">
+                            <a th:href="@{/inquires/detail/{id}(id=${num.inquiryId})}"
+                               th:text="${num.title}"
+                               th:classappend="${num.isPublic.name() == 'PRIVATE'} ? 'private-inquiry'"
+                               th:attr="data-author=${num.userNo.userId}">
+                                배송 기간 문의입니다.
+                            </a>
+                        </td>
+                        <td th:text="${num.userNo.userId}">kuma</td>
+                        <td th:text="${#temporals.format(num.createdDate, 'yyyy-MM-dd')}">2025-09-05</td>
+                        <td>
+            <span
+                    class="status"
+                    th:classappend="${num.status == 'ANSWERED'} ? 'answered' : 'pending'"
+                    th:text="${num.status.name == 'COMPLETED'} ? '解決' : '対応前'"
+            >
+                回答待ち
+            </span>
+                        </td>
+                        <td th:text="${num.isPublic.name == 'PUBLIC'} ? '公開' : '非公開'">公開</td>
+                        <td class="action-links" sec:authorize="hasRole('ADMIN')">
+                            <a th:href="@{/inquires/inquiresedit/{id}(id=${num.inquiryId})}">修正</a>
+                            <a
+                                    onclick="return confirm('本当に削除しますか？');"
+                                    th:href="@{/inquires/inquiresdelete/{id}(id=${num.inquiryId})}"
+                            >削除</a
+                            >
+                        </td>
+                    </tr>
+                    </tbody>
+
+                </table>
+                <nav class="pagination-container" th:if="${!paging.isEmpty()}">
+                    <ul class="pagination">
+                        <li th:classappend="${!paging.hasPrevious()} ? 'disabled'">
+                            <a th:href="${!paging.hasPrevious()} ? '#' : @{/inquires(page=${paging.number - 1})}">
+                                <span>&laquo;</span>
+                            </a>
+                        </li>
+
+                        <li th:each="pageNumber : ${#numbers.sequence(startPage, endPage)}"
+                            th:classappend="${pageNumber == nowPage} ? 'active'">
+                            <a th:href="@{/inquires(page=${pageNumber - 1})}" th:text="${pageNumber}"></a>
+                        </li>
+
+                        <li th:classappend="${!paging.hasNext()} ? 'disabled'">
+                            <a th:href="${!paging.hasNext()} ? '#' : @{/inquires(page=${paging.number + 1})}">
+                                <span>&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </section>
+        </main>
+
+        <!-- footer -->
+        <div th:replace="~{fragments/footer :: commonFooter}"></div>
+
+        <script th:if="${error}" th:inline="javascript">
+            /*<![CDATA[*/
+                alert([[${error}]]);
+            /*]]>*/
+        </script>
+    </body>
+
+</html>

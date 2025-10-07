@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>クマケット | 購入履歴</title>
+
+    <link rel="stylesheet" th:href="@{/css/common/main.css}" />
+    <link rel="stylesheet" th:href="@{/css/common/header.css}" />
+    <link rel="stylesheet" th:href="@{/css/common/mypage.css}" />
+    <link rel="stylesheet" th:href="@{/css/common/sidebar.css}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+        .wishlist-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            padding: 16px 0;
+        }
+        .wishlist-card {
+            background:#fff;
+            border:1px solid var(--border-color);
+            border-radius:10px;
+            overflow:hidden;
+            display:flex;
+            flex-direction:column;
+            text-decoration:none;
+            color:var(--text-color);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .wishlist-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .wishlist-thumb {
+            width:100%;
+            height:100px;
+            object-fit:cover;
+            background:#f0f0f0;
+            display: block;
+        }
+        .wishlist-meta {
+            padding:7px 9px;
+            display:grid;
+            gap:4px;
+        }
+        .wishlist-name {
+            font-weight:700;
+            font-size:13px;
+            line-height:1.2;
+            color:var(--text-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .wishlist-price {
+            font-weight:800;
+            color:var(--primary-color);
+            font-size:14px;
+        }
+        .wishlist-region {
+            font-size:11px;
+            color:#777;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .wishlist-region .fas {
+            font-size: 10px;
+            color: var(--primary-color);
+        }
+        .empty-wishlist {
+            text-align: center;
+            padding: 50px 20px;
+            font-size: 1.1rem;
+            color: #666;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="fragments/header :: commonHeader"></div>
+
+<main class="page">
+    <div th:replace="fragments/sidebar :: commonSidebar"></div>
+
+    <section class="section">
+        <div class="section-head">
+            <h2>購入履歴</h2>
+        </div>
+
+        <div th:if="${#lists.isEmpty(purchaseList)}" class="empty-wishlist">
+            <p>まだ購入した商品がありません。</p>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(purchaseList)}" class="wishlist-grid">
+            <a th:each="product : ${purchaseList}" th:href="@{/product/detail/{pid}(pid=${product.pid})}" class="wishlist-card">
+                <img th:src="${product.imageUrl}" class="wishlist-thumb" alt="商品画像"/>
+                <div class="wishlist-meta">
+                    <div class="wishlist-name" th:text="${product.name}"></div>
+                    <div class="wishlist-price" th:text="${#numbers.formatDecimal(product.price,0,'COMMA',0,'POINT') + '円'}"></div>
+                    <div class="wishlist-region" th:if="${product.regionName != null}">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span th:text="${product.regionName}"></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </section>
+</main>
+</body>
+</html>

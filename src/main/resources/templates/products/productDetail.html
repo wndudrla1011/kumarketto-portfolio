@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ja-JP" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <head>
+        <meta charset="UTF-8" />
+        <title th:text="${product.name} + ' - Kuma-Market'">상품 상세</title>
+        <script th:src="@{/js/jquery-3.7.1.min.js}"></script>
+        <link rel="stylesheet" th:href="@{/css/common/footer.css}" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" th:href="@{/css/common/header.css}" />
+        <link rel="stylesheet" th:href="@{/css/products/productDetail.css}" />
+    </head>
+    <body>
+        <div class="page-container">
+            <!-- header -->
+            <div th:replace="~{fragments/header :: commonHeader}"></div>
+
+            <!-- 상세 페이지 본문 -->
+            <div class="product-detail-container">
+                <!-- 이미지 갤러리 영역 -->
+                <div class="gallery-container">
+                    <div class="thumbnail-list">
+                        <img
+                            th:each="img, stat : ${product.images}"
+                            th:src="@{${img.imageUrl}}"
+                            class="thumbnail"
+                            th:classappend="${stat.index == 0} ? 'active'"
+                            alt="상세 이미지"
+                        />
+                    </div>
+                    <div class="main-image-wrapper">
+                        <img th:src="@{${product.imageUrl}}" class="main-image" id="mainImage" alt="대표 이미지" />
+                    </div>
+                </div>
+
+                <!-- 상품 정보 및 액션 영역 -->
+                <div class="info-action-wrapper">
+                    <div class="info-container">
+                        <div class="info-header">
+                            <h1 class="product-title" th:text="${product.name}">상품명</h1>
+                            <span class="product-status" th:text="${product.displayStatus}">판매중</span>
+                        </div>
+                        <p class="product-price">
+                            <span th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')}">300</span>
+                            <span class="currency">円</span>
+                        </p>
+                        <p class="product-description" th:text="${product.description}">상품 설명</p>
+                    </div>
+
+                    <div class="action-seller-container">
+                        <div class="action-buttons">
+                            <!-- 로그인 & 본인 상품이 아닐 때: 찜, 채팅, 신고 -->
+                            <th:block th:if="${!product.owner}" sec:authorize="isAuthenticated()">
+                                <button
+                                    type="button"
+                                    class="btn like-btn"
+                                    id="like-btn"
+                                    th:data-product-id="${product.pid}"
+                                >
+                                    <i
+                                        class="heart-icon fa-regular fa-heart"
+                                        th:classappend="${product.wished} ? 'fa-solid liked' : ''"
+                                    ></i>
+                                </button>
+                                <button
+                                    type="button"
+                                    class="btn btn-primary"
+                                    id="chat-start-btn"
+                                    th:data-product-id="${product.pid}"
+                                >
+                                    取引チャット
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="btn btn-purchase"
+                                    id="purchase-btn"
+                                    th:data-product-id="${product.pid}"
+                                >
+                                    購入する
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="btn btn-secondary report-btn"
+                                    th:data-product-id="${product.pid}"
+                                >
+                                    通報
+                                </button>
+                            </th:block>
+
+                            <!-- 본인 상품일 때: 수정, 삭제 -->
+                            <th:block th:if="${product.owner and product.status == 'NEW'}">
+                                <a
+                                    th:href="@{/product/update/{productId}(productId=${product.pid})}"
+                                    class="btn btn-secondary"
+                                    >修正</a
+                                >
+                                <a
+                                    th:href="@{/product/delete(pid=${product.pid})}"
+                                    onclick="return confirm('本当に削除しますか？');"
+                                    class="btn btn-secondary"
+                                    >削除</a
+                                >
+                            </th:block>
+
+                            <!-- 관리자에게만 보이는 버튼 -->
+                            <button
+                                id="hidePostBtn"
+                                type="button"
+                                class="btn btn-secondary"
+                                sec:authorize="hasRole('ROLE_ADMIN')"
+                                th:data-product-id="${product.pid}"
+                            >
+                                非公開にする
+                            </button>
+                        </div>
+
+                        <a th:href="@{/stores/{userNo}(userNo=${product.userNo})}" class="seller-info">
+                            <div class="seller-details">
+                                <div class="seller-avatar"></div>
+                                <div class="seller-name-rating">
+                                    <span class="seller-nickname" th:text="${product.nickName}">판매자 닉네임</span>
+                                    <div class="seller-rating">
+                                        <span>評価:</span>
+                                        <span class="star-rating">
+                                            <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+                                                <!-- Full Star (꽉 찬 별) -->
+                                                <i th:if="${product.averageRating >= i}" class="fa-solid fa-star"></i>
+                                                <!-- Half Star (반쪽 별) - 0.5점 단위 표시 -->
+                                                <i
+                                                    th:if="${product.averageRating > (i - 1) and product.averageRating < i}"
+                                                    class="fa-solid fa-star-half-stroke"
+                                                ></i>
+                                                <!-- Empty Star (빈 별) -->
+                                                <i
+                                                    th:if="${product.averageRating < (i - 0.5)}"
+                                                    class="fa-regular fa-star"
+                                                ></i>
+                                            </th:block>
+                                        </span>
+                                        <!-- 소수점 첫째 자리까지 점수 표시 -->
+                                        <span
+                                            th:if="${product.averageRating > 0}"
+                                            th:text="${#numbers.formatDecimal(product.averageRating, 1, 1)}"
+                                            >0.0</span
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- footer -->
+        <div th:replace="~{fragments/footer :: commonFooter}"></div>
+
+        <script>
+            $(document).ready(function () {
+                // --- 썸네일 클릭 시 메인 이미지 변경 ---
+                $(".thumbnail").on("click", function () {
+                    const newSrc = $(this).attr("src");
+                    $("#mainImage").attr("src", newSrc);
+                    $(".thumbnail").removeClass("active");
+                    $(this).addClass("active");
+                });
+
+                // --- 찜(좋아요) 버튼 클릭 이벤트 ---
+                $("#like-btn").on("click", function () {
+                    const $button = $(this);
+                    const productId = $button.data("product-id");
+                    if (!productId) {
+                        alert("商品IDが見つかりません。");
+                        return;
+                    }
+
+                    $.ajax({
+                        url: "/product/like",
+                        type: "POST",
+                        data: { productId: productId },
+                        success: function (response) {
+                            const $heartIcon = $button.find(".heart-icon");
+                            if (response.isWished) {
+                                $heartIcon.addClass("fa-solid liked").removeClass("fa-regular");
+                            } else {
+                                $heartIcon.removeClass("fa-solid liked").addClass("fa-regular");
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("찜 실패:", error);
+                            alert("お気に入り機能で問題が発生しました。");
+                        },
+                    });
+                });
+
+                <!-- 신고 버튼 클릭 -->
+                $(".report-btn").on("click", function () {
+                    const productId = $(this).data("product-id");
+                    if (!productId) {
+                        alert("商品IDが見つかりません。");
+                        return;
+                    }
+
+                    // 팝업창 URL
+                    const url = `/report/reportRequest?productId=${productId}`;
+
+                    // 팝업창 옵션
+                    const popupWidth = 500;
+                    const popupHeight = 550;
+
+                    const left = screen.width / 2 - popupWidth / 2;
+                    const top = screen.height / 2 - popupHeight / 2;
+
+                    const popupOptions = `width=${popupWidth},height=${popupHeight},left=${left},top=${top},scrollbars=yes,resizable=yes`;
+
+                    window.open(url, "reportPopup", popupOptions);
+                });
+            });
+
+            $("#chat-start-btn").on("click", function () {
+                // 1. 버튼의 data-product-id 속성에서 상품 ID를 가져옵니다.
+                const productId = $(this).data("product-id");
+
+                // 2. 서버에 채팅방 생성을 요청하는 AJAX 호출
+                $.ajax({
+                    url: "/api/chat/room/buyer", // 요청을 보낼 서버 주소
+                    type: "POST", // 요청 방식
+                    data: { productId: productId }, // 서버에 보낼 데이터. { key: value }
+                    success: function (response) {
+                        // 3. 서버에서 성공적으로 응답을 받으면,
+                        //    응답받은 chatId를 가지고 채팅 페이지로 이동합니다.
+                        console.log("채팅방 생성/조회 성공:", response);
+                        location.href = "/chat?chatId=" + response.chatId;
+                    },
+                    error: function (xhr, status, error) {
+                        // 4. 요청이 실패하면 사용자에게 알립니다.
+                        console.error("채팅방 생성 실패:", error);
+                        // 401 (Unauthorized) 에러는 보통 로그인이 안 된 경우입니다.
+                        if (xhr.status === 401) {
+                            alert("채팅을 시작하려면 로그인이 필요합니다.");
+                            location.href = "/member/signIn"; // 로그인 페이지로 이동
+                        } else {
+                            alert("채팅방을 만드는 중 오류가 발생했습니다.");
+                        }
+                    },
+                });
+            });
+
+            //  구매하기 버튼 클릭 이벤트 추가
+            $("#purchase-btn").on("click", function () {
+                if (!confirm("この商品を購入しますか？")) {
+                    return;
+                }
+                const productId = $(this).data("product-id");
+
+                $.ajax({
+                    url: "/api/transactions",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({ productId: productId }),
+                    success: function (response) {
+                        alert("販売者に購入リクエストを送信しました。チャットルームに移動します。");
+                        // 성공 시 chatId가 포함된 채팅방으로 즉시 이동
+                        location.href = "/chat?chatId=" + response.chatId;
+                    },
+                    error: function (xhr) {
+                        const errorMessage = xhr.responseJSON
+                            ? xhr.responseJSON.message
+                            : "リクエストの処理中にエラーが発生しました。";
+                        alert(errorMessage);
+                    },
+                });
+            });
+            // 구매 버튼 이벤트 끝
+        </script>
+        <script th:src="@{/js/reportBtn.js}"></script>
+    </body>
+</html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ja-JP" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+  <h1>public page</h1>
+  <a th:href="@{'/member/signIn}" id="signInLink">ログインする</a>
+  <p><a th:href="@{/private}">비공개페이지</a></p>
+  <script>
+      document.addEventListener('DOMContentLoaded', function() {
+          const signInLink = document.getElementById('signInLink');
+          const currentUrl = window.location.pathname + window.location.search;
+          signInLink.href = `/member/signIn?redirect=${encodeURIComponent(currentUrl)}`;
+      });
+  </script>
+
+</body>
+</html>

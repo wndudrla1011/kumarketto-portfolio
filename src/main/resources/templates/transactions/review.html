@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>取引レビュー作成</title>
+    <style>
+        /* --- 페이지 기본 스타일 --- */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #F0F2F5; /* 전체 페이지 배경색 */
+            font-family: sans-serif;
+        }
+
+        /* --- 후기 작성 폼 컨테이너 --- */
+        .review-container {
+            background-color: white;
+            padding: 30px 40px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .review-container h2 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #444;
+        }
+
+        /* --- 별점 스타일 --- */
+        .star-rating {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .star {
+            font-size: 2.5rem;
+            color: #ddd;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        /* JS에서 'active' 클래스를 사용하므로 CSS 선택자를 일치시킵니다 */
+        .star.active,
+        .star:hover {
+            color: #F7DD44;
+        }
+        .star-rating:hover .star {
+             color: #F7DD44;
+        }
+        .star:hover ~ .star {
+            color: #ddd;
+        }
+
+
+        /* --- 텍스트 영역 --- */
+        #evaluation-textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            resize: vertical;
+            box-sizing: border-box; /* 패딩이 너비를 초과하지 않도록 설정 */
+            font-size: 1rem;
+        }
+
+        /* --- 버튼 그룹 및 버튼 스타일 --- */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end; /* 버튼을 오른쪽으로 정렬 */
+        }
+        .action-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            color: white;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        .action-button:hover {
+            filter: brightness(0.9);
+        }
+        .action-button:disabled {
+            background-color: #9CA3AF;
+            cursor: not-allowed;
+        }
+        .approve {
+            background-color: #10B981;
+        }
+        .reject {
+            background-color: #EF4444;
+        }
+
+        /* --- 에러 메시지 --- */
+        .error-message {
+            min-height: 20px;
+            color: #EF4444;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        /* --- 성공 화면 스타일 --- */
+        #success-view {
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="review-container">
+    <div id="form-view">
+        <h2>取引レビュー作成</h2>
+        <form id="review-form">
+            <div class="form-group">
+                <label>評価</label>
+                <div class="star-rating">
+                    <span class="star" data-value="1">★</span>
+                    <span class="star" data-value="2">★</span>
+                    <span class="star" data-value="3">★</span>
+                    <span class="star" data-value="4">★</span>
+                    <span class="star" data-value="5">★</span>
+                </div>
+                <input type="hidden" id="score-input" name="score" value="0" />
+            </div>
+            <div class="form-group">
+                <label for="evaluation-textarea">レビュー内容 (任意)</label>
+                <textarea id="evaluation-textarea" rows="5" placeholder="取引の経験を共有してください。"></textarea>
+            </div>
+            <div id="review-error-message" class="error-message"></div>
+            <div class="button-group">
+                <button type="button" class="action-button reject" id="review-cancel-btn">キャンセル</button>
+                <button type="submit" class="action-button approve" id="review-submit-btn">作成完了</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="success-view" style="display: none;">
+        <h2>提出完了</h2>
+        <p>貴重なレビューをありがとうございます。</p>
+        <p>このウィンドウは2秒後に自動的に閉じます。</p>
+    </div>
+</div>
+
+<script>
+    // JavaScript 코드는 수정할 필요 없이 그대로 작동합니다.
+    document.addEventListener("DOMContentLoaded", function() {
+        const formView = document.getElementById('form-view');
+        const successView = document.getElementById('success-view');
+        const reviewForm = document.getElementById('review-form');
+        const scoreInput = document.getElementById('score-input');
+        const stars = document.querySelectorAll('.star-rating .star');
+        const errorMessageDiv = document.getElementById('review-error-message');
+        const cancelBtn = document.getElementById('review-cancel-btn');
+        const submitBtn = document.getElementById('review-submit-btn');
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const transactionId = urlParams.get('transactionId');
+
+        if (!transactionId) {
+            formView.innerHTML = '<h2>エラー</h2><p>必須情報（取引ID）がありません。</p>';
+            return;
+        }
+
+        let currentRating = 0;
+
+        const updateStars = (rating) => {
+            stars.forEach(star => {
+                star.classList.toggle('active', star.dataset.value <= rating);
+            });
+        };
+
+        // 별점 로직: 마우스오버와 클릭 이벤트 처리
+        stars.forEach(star => {
+            star.addEventListener('mouseover', () => {
+                const hoverRating = star.dataset.value;
+                stars.forEach(s => {
+                    s.classList.toggle('active', s.dataset.value <= hoverRating);
+                });
+            });
+
+            star.addEventListener('mouseout', () => {
+                updateStars(currentRating);
+            });
+
+            star.addEventListener('click', () => {
+                currentRating = star.dataset.value;
+                scoreInput.value = currentRating;
+                updateStars(currentRating);
+            });
+        });
+
+        cancelBtn.addEventListener('click', () => window.close());
+
+        reviewForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorMessageDiv.textContent = '';
+
+            if (currentRating == 0) {
+                errorMessageDiv.textContent = '評価点を選択してください。';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = '提出中...';
+
+            const evaluation = document.getElementById('evaluation-textarea').value;
+
+            try {
+                const response = await fetch(`/api/transactions/${transactionId}/reviews`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        score: parseInt(currentRating),
+                        evaluation: evaluation
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'レビューの登録に失敗しました。');
+                }
+
+                formView.style.display = 'none';
+                successView.style.display = 'block';
+
+                setTimeout(() => window.close(), 2000);
+
+            } catch (error) {
+                errorMessageDiv.textContent = error.message;
+                submitBtn.disabled = false;
+                submitBtn.textContent = '作成完了';
+            }
+        });
+    });
+</script>
+</body>
+</html>

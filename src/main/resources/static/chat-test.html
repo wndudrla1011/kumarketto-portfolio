@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>쿠마켓토 - 실시간 채팅</title>
+    <style>
+        /* 기본 스타일링: 가독성과 사용자 경험을 향상시킵니다. */
+        body {
+          font-family: "Malgun Gothic", sans-serif;
+          margin: 0;
+          padding: 20px;
+          background-color: #f4f4f9;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        .container {
+          width: 100%;
+          max-width: 800px;
+          background-color: white;
+          border-radius: 8px;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+        }
+        h1, h2 {
+          text-align: center;
+          color: #333;
+        }
+        .hidden { display: none; }
+        input[type="text"] {
+          padding: 8px;
+          border-radius: 4px;
+          border: 1px solid #ccc;
+          width: 200px;
+        }
+        button {
+          padding: 8px 15px;
+          border: none;
+          background-color: #5c67f2;
+          color: white;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 16px;
+        }
+        button:hover { background-color: #4a54c2; }
+        #chat-window {
+          height: 500px;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+          overflow-y: scroll;
+          padding: 10px;
+          margin-bottom: 10px;
+          background-color: #e5efff;
+          flex-grow: 1; /* 채팅창이 남은 공간을 모두 차지하도록 설정 */
+        }
+        .message {
+          padding: 8px;
+          margin-bottom: 8px;
+          border-radius: 7px;
+          max-width: 70%;
+          word-wrap: break-word;
+        }
+        .message.sent {
+          background-color: #fcc421;
+          margin-left: auto;
+          text-align: right;
+        }
+        .message.received {
+          background-color: #ffffff;
+          margin-right: auto;
+          text-align: left;
+        }
+        .message-meta {
+          font-size: 0.8em;
+          color: #555;
+          margin-top: 5px;
+        }
+        .message img {
+          max-width: 100%;
+          border-radius: 5px;
+          margin-top: 5px;
+        }
+        #chat-input-area { display: flex; }
+        #message-input {
+          flex-grow: 1;
+          margin-right: 10px;
+        }
+        #login-info {
+          text-align: right;
+          padding: 5px;
+          color: #555;
+          font-size: 0.9em;
+          margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>실시간 채팅 💬</h1>
+
+    <div id="login-info">
+        <strong>로그인된 사용자:</strong> <span id="current-user-id"></span>
+    </div>
+
+    <div id="chat-section">
+        <h2>
+            상품 #<span id="product-id-display"></span> / 채팅방 #<span
+                id="chat-id-display"
+        ></span>
+        </h2>
+        <div id="chat-window"></div>
+        <div id="chat-input-area">
+            <input
+                    type="text"
+                    id="message-input"
+                    placeholder="메시지 또는 이미지 URL 입력..."
+                    onkeydown="handleEnterKey(event)"
+            />
+            <button id="send-btn" onclick="sendMessage()">전송</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- 전역 변수: 웹소켓 객체, 현재 사용자 ID, 채팅방 ID 등을 저장합니다. ---
+    let websocket = null;
+    let currentUserId = null;
+    let currentChatId = null;
+    let currentProductId = null;
+
+    // --- 페이지가 로드되면 자동으로 실행되는 초기화 함수 ---
+    window.onload = async function() {
+        // 1. URL 쿼리스트링에서 채팅방 ID와 상품 ID를 가져옵니다.
+        const urlParams = new URLSearchParams(window.location.search);
+        currentChatId = parseInt(urlParams.get('chatId'));
+        currentProductId = parseInt(urlParams.get('productId'));
+
+        // 필수 정보가 없으면 실행을 중단합니다.
+        if (!currentChatId || !currentProductId) {
+            alert("잘못된 접근입니다. 채팅 목록 페이지에서 다시 시도해주세요.");
+            // location.href = '/chat/list'; // 채팅 목록 페이지로 리디렉션
+            return;
+        }
+
+        // 2. 현재 로그인한 사용자 ID를 설정합니다.
+        // [중요] 실제 서비스에서는 서버 API를 호출하여 세션에 저장된 사용자 정보를 가져와야 합니다.
+        // 예: const response = await fetch('/api/user/me'); const user = await response.json(); currentUserId = user.id;
+        // 여기서는 테스트를 위해 임시로 prompt 창을 사용합니다.
+        currentUserId = prompt("테스트를 위해 당신의 사용자 ID를 입력해주세요 (예: user203 또는 user204)");
+        if (!currentUserId) {
+            alert("사용자 ID가 없어 채팅을 시작할 수 없습니다.");
+            return;
+        }
+
+        // 3. UI에 현재 정보를 업데이트합니다.
+        document.getElementById("product-id-display").textContent = currentProductId;
+        document.getElementById("chat-id-display").textContent = currentChatId;
+        document.getElementById("current-user-id").textContent = currentUserId;
+
+        // 4. 웹소켓 연결을 시작합니다.
+        connectWebSocket();
+
+        // 5. (선택사항) 여기에 과거 메시지를 불러오는 함수를 호출할 수 있습니다.
+        // 예: fetchPastMessages(currentChatId);
+    };
+
+
+    /**
+     * 웹소켓 연결을 설정하는 함수입니다.
+     * 서버와 실시간 통신 채널을 엽니다.
+     */
+    function connectWebSocket() {
+        const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+        const host = window.location.host;
+        const socketUrl = `${protocol}//${host}/ws/chat`;
+
+        websocket = new WebSocket(socketUrl);
+
+        // 연결 성공 시
+        websocket.onopen = function () {
+            console.log("WebSocket 연결 성공!");
+            displaySystemMessage(`채팅방 #${currentChatId}에 입장했습니다.`);
+        };
+
+        // 서버로부터 메시지 수신 시
+        websocket.onmessage = function (event) {
+            console.log("서버로부터 메시지 수신:", event.data);
+            const message = JSON.parse(event.data);
+
+            // 현재 보고 있는 채팅방의 메시지일 경우에만 화면에 표시
+            if (message.chatId === currentChatId) {
+                displayMessage(message);
+            } else {
+                // 다른 채팅방의 메시지이면 알림만 띄움
+                alert(`다른 채팅방 #${message.chatId}에 새 메시지가 도착했습니다!`);
+            }
+        };
+
+        // 연결 종료 시
+        websocket.onclose = function () {
+            console.log("WebSocket 연결이 닫혔습니다.");
+            displaySystemMessage("서버와의 연결이 끊어졌습니다. 새로고침 해주세요.");
+        };
+
+        // 에러 발생 시
+        websocket.onerror = function (error) {
+            console.error("WebSocket 오류 발생:", error);
+            displaySystemMessage("오류가 발생했습니다. 콘솔을 확인하세요.");
+        };
+    }
+
+    /**
+     * 메시지 전송 함수
+     * 입력 필드의 내용을 JSON 형식으로 만들어 웹소켓을 통해 서버로 전송합니다.
+     */
+    function sendMessage() {
+        if (!websocket || websocket.readyState !== WebSocket.OPEN) {
+            alert("WebSocket이 연결되어 있지 않습니다.");
+            return;
+        }
+
+        const messageInput = document.getElementById("message-input");
+        const content = messageInput.value.trim();
+
+        if (content === "") return; // 내용이 없으면 보내지 않음
+
+        let messageType = "TEXT";
+        let imageUrl = null;
+
+        // 간단한 URL 감지 로직
+        if (content.startsWith("http") && (content.endsWith(".png") || content.endsWith(".jpg") || content.endsWith(".jpeg") || content.endsWith(".gif"))) {
+            messageType = "IMAGE";
+            imageUrl = content;
+        }
+
+        // 서버의 ChatMessageDTO 형식에 맞는 JSON 객체를 생성
+        const messagePayload = {
+            chatId: currentChatId,
+            content: messageType === "TEXT" ? content : null,
+            imageUrl: imageUrl,
+            messageType: messageType,
+        };
+
+        // JSON 문자열로 변환하여 서버에 전송
+        websocket.send(JSON.stringify(messagePayload));
+
+        // 사용자 경험을 위해 내가 보낸 메시지를 즉시 화면에 표시 (낙관적 업데이트)
+        const optimisticMessage = {
+            senderId: currentUserId, // ChatMessageSendDTO 형식에 맞춤
+            content: messagePayload.content,
+            imageUrl: messagePayload.imageUrl,
+            createdDate: new Date().toISOString(),
+        };
+        displayMessage(optimisticMessage);
+
+        messageInput.value = ""; // 입력 필드 초기화
+        messageInput.focus();
+    }
+
+    /**
+     * 엔터 키 입력 처리 함수
+     */
+    function handleEnterKey(event) {
+        if (event.key === "Enter") {
+            sendMessage();
+        }
+    }
+
+    /**
+     * 수신된 메시지를 채팅창에 표시하는 함수
+     * @param {object} msg - 서버로부터 받은 메시지 객체 (ChatMessageSendDTO 형식)
+     */
+    function displayMessage(msg) {
+        const chatWindow = document.getElementById("chat-window");
+        const messageElement = document.createElement("div");
+
+        // 내가 보낸 메시지인지, 상대방이 보낸 메시지인지 구분하여 클래스 적용
+        const messageTypeClass = msg.senderId === currentUserId ? "sent" : "received";
+        messageElement.classList.add("message", messageTypeClass);
+
+        let messageContentHTML = "";
+        if (msg.content) {
+            messageContentHTML += `<div>${msg.content}</div>`;
+        }
+        if (msg.imageUrl) {
+            messageContentHTML += `<div><img src="${msg.imageUrl}" alt="전송된 이미지"></div>`;
+        }
+
+        const sentTime = new Date(msg.createdDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        messageContentHTML += `<div class="message-meta">${msg.senderId} - ${sentTime}</div>`;
+
+        messageElement.innerHTML = messageContentHTML;
+        chatWindow.appendChild(messageElement);
+
+        // 스크롤을 항상 맨 아래로 이동
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    /**
+     * 시스템 메시지(연결, 종료 등)를 채팅창에 표시하는 함수
+     * @param {string} text - 표시할 시스템 메시지 내용
+     */
+    function displaySystemMessage(text) {
+        const chatWindow = document.getElementById("chat-window");
+        const systemMessage = document.createElement("div");
+        systemMessage.textContent = text;
+        systemMessage.style.textAlign = "center";
+        systemMessage.style.color = "#888";
+        systemMessage.style.fontSize = "0.9em";
+        systemMessage.style.margin = "10px 0";
+        chatWindow.appendChild(systemMessage);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+</script>
+</body>
+</html>

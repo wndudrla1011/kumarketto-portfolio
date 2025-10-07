@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ja-JP" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>通報詳細</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" th:href="@{/css/common/main.css}" />
+    <style>
+        /* 화면 전체를 덮어서 중앙 정렬 */
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f8f8f8;
+            font-family: sans-serif;
+        }
+
+        /* 팝업 컨테이너 */
+        .report-popup-container {
+            width: 90%;
+            max-width: 700px;
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 30px 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .report-popup-container table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .report-popup-container th,
+        .report-popup-container td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .report-popup-container th {
+            width: 130px;
+            background-color: #f9f9f9;
+            font-weight: 500;
+        }
+
+        .report-popup-container a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .report-popup-container a:hover {
+            text-decoration: underline;
+        }
+
+        /* 버튼 중앙 정렬 */
+        .popup-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .popup-buttons button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            min-width: 100px;
+            transition: all 0.2s;
+        }
+
+        .popup-buttons button:hover {
+            opacity: 0.9;
+        }
+
+        /* 닫기 버튼 스타일 */
+        .popup-buttons .close-btn {
+            background-color: #ccc;
+            color: #333;
+        }
+
+        /* 기각 버튼 스타일 (통일감 있게) */
+        .popup-buttons .reject-btn {
+            background-color: #ff8c50;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+<div class="report-popup-container">
+    <table>
+        <tr>
+            <th>通報番号</th>
+            <td th:text="${reportDetail.reportId}"></td>
+            <th>通報者ID</th>
+            <td th:text="${reportDetail.userId}"></td>
+        </tr>
+        <tr>
+            <th>通報対象</th>
+            <td colspan="3">
+                <a th:href="@{'/product/detail/' + ${reportDetail.productId} + '?reportId=' + ${reportDetail.reportId}}"
+                   th:text="${reportDetail.title}" target="_blank"></a>
+            </td>
+        </tr>
+        <tr>
+            <th>通報理由</th>
+            <td colspan="3" th:text="${reportDetail.reportReason.reportReason}"></td>
+        </tr>
+        <tr>
+            <th>備考</th>
+            <td colspan="3" th:text="${reportDetail.description}"></td>
+        </tr>
+        <tr>
+            <th>添付ファイル</th>
+            <td colspan="3">
+                <a th:if="${reportDetail.imageUrl != null}"
+                   th:href="@{/report/reportDetail/download(filePath=${reportDetail.imageUrl})}"
+                   th:text="${reportDetail.imageUrl}"></a>
+            </td>
+        </tr>
+        <tr>
+            <th>対応状況</th>
+            <td th:utext="${isPending ? reportDetail.reportStatus.reportStatus : reportDetail.actionType.actionType}"></td>
+        </tr>
+        <tr>
+            <th>通報日</th>
+            <td th:text="${#strings.substring(reportDetail.createdDate.toString(), 0, 10)}"></td>
+        </tr>
+        <tr>
+            <th>処理日</th>
+            <td th:text="${#strings.substring(reportDetail.actionDate.toString(), 0, 10)}"></td>
+        </tr>
+    </table>
+
+    <div class="popup-buttons">
+        <button class="close-btn" onclick="window.close()">閉じる</button>
+        <button class="reject-btn" id="rejectBtn">却下</button>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    document.getElementById("rejectBtn").addEventListener("click", function() {
+        if(!confirm('本当にこの通報を却下しますか？')) return;
+
+        fetch('/report/reject', {
+            method: 'POST',
+            headers: {'Content-Type' : 'application/x-www-form-urlencoded'},
+            body: new URLSearchParams({
+                reportId : /*[[${reportDetail.reportId}]]*/
+            })
+        })
+        .then(response => {
+            if(response.ok) {
+                window.opener.location.reload();
+                window.close();
+            } else {
+                alert("失敗しました。");
+            }
+        });
+    });
+</script>
+</body>
+</html>

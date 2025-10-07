@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html
+    lang="ja-JP"
+    xmlns:th="http://www.thymeleaf.org"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    xmlns:display="http://www.w3.org/1999/xhtml"
+>
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="stylesheet" th:href="@{/css/products/writeForm.css}" />
+        <title>新しい商品を出品</title>
+        <script th:src="@{/js/jquery-3.7.1.min.js}"></script>
+    </head>
+    <body>
+        <div class="form-container">
+            <div class="form-header">
+                <h1>新しい商品を出品</h1>
+                <p>商品の情報を入力してください。</p>
+            </div>
+
+            <!-- Flash 메시지 (성공/실패) -->
+            <div th:if="${errors != null}">
+                <ul class="error-list">
+                    <li th:each="err : ${errors}" th:text="${err.defaultMessage}"></li>
+                </ul>
+            </div>
+
+            <form th:action="@{/product/write}" th:object="${product}" method="post" enctype="multipart/form-data">
+                <input type="hidden" th:field="*{userNo}" th:value="${userNo}" />
+                <input type="hidden" name="status" value="NEW" />
+
+                <!-- 상품명 -->
+                <div class="form-group">
+                    <label for="name">商品名</label>
+                    <input
+                        type="text"
+                        id="name"
+                        class="form-control"
+                        th:field="*{name}"
+                        placeholder="例）暖かいニット"
+                        required
+                    />
+                </div>
+
+                <!-- 카테고리 -->
+                <div class="form-group">
+                    <label for="category">カテゴリー</label>
+                    <select id="category" class="form-control" th:field="*{categoryId}" required>
+                        <option value="" selected>カテゴリーを選択</option>
+                        <option
+                            th:each="c : ${categories}"
+                            th:value="${c.categoryId}"
+                            th:text="${c.categoryName}"
+                        ></option>
+                    </select>
+                </div>
+
+                <!-- 서브카테고리 -->
+                <div class="form-group">
+                    <label for="subCategory">サブカテゴリー</label>
+                    <select id="subCategory" class="form-control" th:field="*{subcategoryId}" required disabled>
+                        <option value="" disabled selected>サブカテゴリーを選択</option>
+                    </select>
+                </div>
+
+                <!-- 지역 선택 -->
+                <div class="form-group">
+                    <label for="region">エリア</label>
+                    <select id="region" class="form-control" th:field="*{selectedRegionId}" required>
+                        <option value="" selected>地方を選択</option>
+                        <option th:each="r : ${regions}" th:value="${r.rgnId}" th:text="${r.rgnName}"></option>
+                    </select>
+                </div>
+
+                <!-- 도도부현 -->
+                <div class="form-group">
+                    <label for="prefecture">都道府県</label>
+                    <select id="prefecture" class="form-control" th:field="*{selectedPrefectureId}" required disabled>
+                        <option value="" disabled selected>都道府県を選択</option>
+                    </select>
+                </div>
+
+                <!-- 시정촌 -->
+                <div class="form-group">
+                    <label for="municipality">市区町村</label>
+                    <select id="municipality" class="form-control" th:field="*{municipalityId}" required disabled>
+                        <option value="" disabled selected>市区町村を選択</option>
+                    </select>
+                </div>
+
+                <!-- 가격 -->
+                <div class="form-group">
+                    <label for="price">価格（円）</label>
+                    <input type="number" id="price" class="form-control" th:field="*{price}" placeholder="0" required />
+                </div>
+
+                <!-- 이미지 업로드 -->
+                <div class="form-group image-upload-section">
+                    <label>商品画像（最大３枚）</label>
+                    <div class="image-upload-grid">
+                        <!-- 대표 이미지 -->
+                        <div class="image-box main-image">
+                            <div class="upload-placeholder">
+                                <i class="fa-solid fa-camera"></i>
+                                <span>代表画像を追加</span>
+                            </div>
+                            <img id="main-preview" class="preview" />
+                            <input type="file" id="mainUpload" name="mainUpload" accept="image/*" required />
+                            <div class="image-overlay">
+                                <button type="button" class="overlay-btn delete-btn" data-target="mainUpload">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- 상세 이미지 1 -->
+                        <div class="image-box">
+                            <div class="upload-placeholder">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>詳細画像を追加</span>
+                            </div>
+                            <img id="preview1" class="preview" />
+                            <input type="file" id="detail1" name="detailUploads" accept="image/*" />
+                            <div class="image-overlay">
+                                <button type="button" class="overlay-btn delete-btn" data-target="detail1">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                                <button type="button" class="overlay-btn set-main-btn" data-target="detail1">
+                                    <i class="fa-solid fa-star"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- 상세 이미지 2 -->
+                        <div class="image-box">
+                            <div class="upload-placeholder">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>詳細画像を追加</span>
+                            </div>
+                            <img id="preview2" class="preview" />
+                            <input type="file" id="detail2" name="detailUploads" accept="image/*" />
+                            <div class="image-overlay">
+                                <button type="button" class="overlay-btn delete-btn" data-target="detail2">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                                <button type="button" class="overlay-btn set-main-btn" data-target="detail2">
+                                    <i class="fa-solid fa-star"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 설명 -->
+                <div class="form-group">
+                    <label for="description">商品の説明</label>
+                    <textarea
+                        id="description"
+                        class="form-control"
+                        th:field="*{description}"
+                        placeholder="商品の状態、購入時期、ブランドなど、詳しい情報を入力すると販売率が上がります。"
+                        required
+                    ></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">出品する</button>
+            </form>
+        </div>
+
+        <script>
+            $(document).ready(function () {
+                // --- (카테고리/지역 드롭다운 로직은 이전과 동일) ---
+                $("#category").change(function () {
+                    const categoryId = $(this).val();
+                    const $subCategory = $("#subCategory");
+                    if (categoryId) {
+                        $.get("/product/subcategories", { categoryId }, function (subCategories) {
+                            $subCategory
+                                .empty()
+                                .append('<option value="" disabled selected>サブカテゴリーを選択</option>');
+                            $.each(subCategories, (_, sub) => {
+                                $subCategory.append($("<option>").val(sub.subcategoryId).text(sub.subcategoryName));
+                            });
+                            $subCategory.prop("disabled", false);
+                        });
+                    } else {
+                        $subCategory
+                            .empty()
+                            .append('<option value="" disabled selected>サブカテゴリーを選択</option>')
+                            .prop("disabled", true);
+                    }
+                });
+                $("#region").change(function () {
+                    const regionId = $(this).val();
+                    const $prefecture = $("#prefecture");
+                    const $municipality = $("#municipality");
+                    if (regionId) {
+                        $.get("/product/prefectures", { regionId }, function (prefectures) {
+                            $prefecture.empty().append('<option value="" disabled selected>都道府県を選択</option>');
+                            $.each(prefectures, (_, prefObj) => {
+                                $prefecture.append($("<option>").val(prefObj.prefId).text(prefObj.prefName));
+                            });
+                            $prefecture.prop("disabled", false);
+                        });
+                    } else {
+                        $prefecture
+                            .empty()
+                            .append('<option value="" disabled selected>都道府県を選択</option>')
+                            .prop("disabled", true);
+                    }
+                    $municipality
+                        .empty()
+                        .append('<option value="" disabled selected>市区町村を選択</option>')
+                        .prop("disabled", true);
+                });
+                $("#prefecture").change(function () {
+                    const prefId = $(this).val();
+                    const $muni = $("#municipality");
+                    if (prefId) {
+                        $.get("/product/municipalities", { prefectureId: prefId }, function (munis) {
+                            $muni.empty().append('<option value="" disabled selected>市区町村を選択</option>');
+                            $.each(munis, (_, muni) => {
+                                $muni.append($("<option>").val(muni.mid).text(muni.muniName));
+                            });
+                            $muni.prop("disabled", false);
+                        });
+                    } else {
+                        $muni
+                            .empty()
+                            .append('<option value="" disabled selected>市区町村を選択</option>')
+                            .prop("disabled", true);
+                    }
+                });
+
+                // --- 이미지 미리보기 및 UI 업데이트 로직 (디자인에 맞게 수정) ---
+                $('input[type="file"]').on("change", function () {
+                    const file = this.files[0];
+                    const $parentBox = $(this).closest(".image-box");
+                    const $previewImg = $parentBox.find("img.preview");
+                    const $placeholder = $parentBox.find(".upload-placeholder");
+                    const $overlayBtns = $parentBox.find(".overlay-btn");
+
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            $previewImg.attr("src", e.target.result).show();
+                            $placeholder.hide();
+                            $overlayBtns.css("display", "flex"); // flex로 변경
+                            $parentBox.css("border-style", "solid");
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        $previewImg.attr("src", "").hide();
+                        $placeholder.show();
+                        $overlayBtns.hide();
+                        $parentBox.css("border-style", "dashed");
+                    }
+                });
+
+                // --- 이미지 삭제 버튼 클릭 이벤트 (디자인에 맞게 수정) ---
+                $(".delete-btn").on("click", function () {
+                    const $parentBox = $(this).closest(".image-box");
+                    const $fileInput = $parentBox.find('input[type="file"]');
+                    $fileInput.val("");
+                    $fileInput.trigger("change"); // UI 업데이트를 위해 change 이벤트 강제 발생
+                });
+
+                // --- 메인 이미지로 설정 버튼 클릭 이벤트 ---
+                $(".set-main-btn").on("click", function () {
+                    const $detailBox = $(this).closest(".image-box");
+                    const $mainBox = $(".image-box.main-image");
+
+                    const $mainInput = $mainBox.find('input[type="file"]');
+                    const $detailInput = $detailBox.find('input[type="file"]');
+
+                    const mainFile = $mainInput[0].files[0];
+                    const detailFile = $detailInput[0].files[0];
+
+                    // DataTransfer 객체를 사용해 files 속성을 교체
+                    const mainDataTransfer = new DataTransfer();
+                    if (detailFile) mainDataTransfer.items.add(detailFile);
+                    $mainInput[0].files = mainDataTransfer.files;
+
+                    const detailDataTransfer = new DataTransfer();
+                    if (mainFile) detailDataTransfer.items.add(mainFile);
+                    $detailInput[0].files = detailDataTransfer.files;
+
+                    // UI 업데이트를 위해 각 input의 change 이벤트를 강제 발생
+                    $mainInput.trigger("change");
+                    $detailInput.trigger("change");
+
+                    alert("代表画像が変更されました。");
+                });
+            });
+        </script>
+    </body>
+</html>

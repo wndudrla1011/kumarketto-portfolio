@@ -1,0 +1,70 @@
+footer {
+    width: 100%;
+    background-color: #333; /* 어두운 배경색 */
+    color: #aaa; /* 밝은 글자색 */
+    padding: 40px 0;
+    margin-top: auto; /* 핵심: 페이지 내용이 적어도 푸터를 하단으로 밀어냄 */
+    font-size: 0.85rem;
+    line-height: 1.8;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap; /* 화면이 작아지면 줄바꿈 */
+    gap: 20px;
+}
+
+.footer-info,
+.footer-links {
+    flex: 1;
+    min-width: 250px; /* 최소 너비 */
+}
+
+.footer-info h3 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 15px;
+}
+
+.footer-links h4 {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #fff;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #555;
+}
+
+.footer-links ul {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-links ul li {
+    margin-bottom: 8px;
+}
+
+.footer-links a {
+    color: #aaa;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.footer-links a:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
+.footer-bottom {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #555;
+    font-size: 0.8rem;
+    color: #777;
+}

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja-JP" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>マイショップ管理 | クマケット</title>
+        <link rel="stylesheet" th:href="@{/css/common/main.css}" />
+        <link rel="stylesheet" th:href="@{/css/common/header.css}" />
+        <link rel="stylesheet" th:href="@{/css/store/my-store.css}" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    </head>
+    <body th:data-user-no="${currentUserNo}">
+        <!-- Header Fragment -->
+        <div th:replace="~{fragments/header :: commonHeader}"></div>
+
+        <div class="container">
+            <div class="form-card">
+                <h1>マイショップ管理</h1>
+
+                <!-- 이미지 업로드 폼 -->
+                <form id="image-form">
+                    <div class="form-group">
+                        <label>プロフィール画像</label>
+                        <div class="image-preview-wrapper">
+                            <div class="image-preview" id="image-preview">
+                                <span>画像<br />選択</span>
+                            </div>
+                            <div class="file-input-group">
+                                <label for="profileImageFile" class="btn-upload-label">ファイルを選択</label>
+                                <input type="file" id="profileImageFile" name="profileImageFile" accept="image/*" />
+                                <button type="submit" class="btn primary">画像をアップロード</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <hr />
+
+                <!-- 소개글 등 텍스트 수정 폼 -->
+                <form id="text-form">
+                    <div class="form-group">
+                        <label for="description">ショップ紹介文</label>
+                        <textarea id="description" name="description" placeholder="내 상점을 소개해 보세요."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="profileImage">現在の画像URL</label>
+                        <input
+                            type="text"
+                            id="profileImage"
+                            name="profileImage"
+                            readonly
+                            placeholder="이미지를 업로드하면 URL이 자동으로 채워집니다."
+                        />
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn primary">紹介文を保存</button>
+                        <a href="#" id="go-to-store-btn" class="btn secondary">マイショップへ移動</a>
+                    </div>
+                </form>
+
+                <div id="success-message" class="message success"></div>
+                <div id="error-message" class="message error"></div>
+            </div>
+        </div>
+        <script th:src="@{/js/main/main.js}"></script>
+        <script th:src="@{js/store/my-store.js}"></script>
+    </body>
+</html>

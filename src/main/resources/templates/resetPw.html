@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ja-JP" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>パスワード再設定</title>
+    <script th:src="@{/js/jquery-3.7.1.min.js}"></script>
+    <style>
+        :root {
+            --primary-color: #e17055;   /* 오렌지 */
+            --secondary-color: #d63031; /* 진한 레드 */
+            --bg-color: #fff3e0;        /* 심플한 연주황 톤 */
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--bg-color);
+            font-family: "Noto Sans JP", sans-serif;
+            overflow: hidden; /* 스크롤바 제거 */
+        }
+
+        .popup {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            width: 360px;
+            text-align: center;
+        }
+
+        .popup h2 {
+            margin-bottom: 1.5rem;
+             color: #000;
+            font-size: 1.4rem;
+        }
+
+        .popup input,
+        .popup select {
+            width: 100%;
+            padding: 0.6rem;
+            margin: 0.4rem 0;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .popup button {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 0.7rem 1.2rem;
+            margin-top: 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+
+        .popup button:hover {
+            background: var(--secondary-color);
+        }
+
+        /* 생년월일 select 한 줄 정렬 */
+        .birth-selects {
+            display: flex;
+            gap: 6px;
+            margin: 0.4rem 0;
+        }
+
+        .birth-selects select {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+<div class="popup">
+    <div id="checkUserForm">
+        <h2>本人確認</h2>
+        <input type="text" id="userId" placeholder="ID">
+        <div class="birth-selects">
+            <select id="year">
+                <option th:each="year : ${#numbers.sequence(T(java.time.Year).now().value,1920,-1)}"
+                        th:value="${year}" th:text="${year}">
+                </option>
+            </select>
+            <select id="month">
+                <option th:each="month : ${#numbers.sequence(1, 12)}"
+                        th:value="${month}" th:text="${month}">
+                </option>
+            </select>
+            <select id="day">
+                <option th:each="day : ${#numbers.sequence(1, 31)}"
+                        th:value="${day}" th:text="${day}">
+                </option>
+            </select>
+        </div>
+        <button id="checkUserBtn">確認</button>
+    </div>
+
+    <div id="resetPwForm" style="display:none;">
+        <h2>パスワード再設定</h2>
+        <input type="password" id="newPw" placeholder="新しいパスワード">
+        <input type="password" id="confirmPw" placeholder="パスワード確認">
+        <button id="resetPwBtn">再設定</button>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    $(document).ready(function(){
+        $('#checkUserBtn').click(function() {
+            let userId = $('#userId').val().trim();
+            let year = $('#year').val();
+            let month = $('#month').val();
+            let day = $('#day').val();
+
+            if(!userId) {
+                alert('IDを入力してください。');
+                return;
+            }
+
+            $.ajax({
+                url: /*[[@{/member/checkUser}]]*/,
+                type: 'POST',
+                data: { userId: userId, year: year, month: month, day: day},
+                success: function(exists) {
+                    if(exists) {
+                        $('#checkUserForm').hide();
+                        $('#resetPwForm').show();
+                    } else {
+                        alert('該当するIDがありません。');
+                    }
+                },
+                error: function() { alert('サーバーエラー'); }
+            });
+        });
+        $('#resetPwBtn').click(function() {
+            let newPw = $('#newPw').val();
+            let confirmPw = $('#confirmPw').val();
+
+            if(!newPw) {
+                alert('新しいパスワードを入力してください。');
+                return;
+            }
+
+            if(newPw && !confirmPw) {
+                alert('パスワードを再度入力してください。');
+                return;
+            }
+
+            let pwPattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*?_])[A-Za-z\d!@#$%^&*?_]{8,12}$/;
+            if(!pwPattern.test(newPw)) {
+                alert('英字（a～z、A～Z）、数字（0～9）、記号の3種類を組合せた8～12桁の半角文字でご入力ください。');
+                return;
+            }
+
+            if(newPw !== confirmPw) {
+                alert('パスワードが一致しません。');
+                return;
+            }
+
+            $.ajax({
+                url: /*[[@{/member/resetPw}]]*/,
+                type: 'POST',
+                data: { userId: $('#userId').val(), password: newPw },
+                success: function() {
+                    window.close();
+                },
+                error: function() { alert('サーバーエラー'); }
+            });
+        });
+    });
+</script>
+</body>
+</html>

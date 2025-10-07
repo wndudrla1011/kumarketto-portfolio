@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>クマケット - チャット</title>
+  <style>
+    /* --- 스타일(CSS) 부분은 변경사항이 없으므로 생략합니다 --- */
+    @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap");
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      font-family: "Noto Sans KR", sans-serif;
+      background-color: #f8f9fa;
+      overflow: hidden;
+      color: #212529;
+    }
+    .main-container {
+      display: flex;
+      height: 100vh;
+      width: 100%;
+    }
+    #room-list-panel {
+      width: 350px;
+      border-right: 1px solid #dee2e6;
+      background-color: #fff;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    #room-list-header {
+      padding: 24px 20px;
+      font-size: 20px;
+      font-weight: 700;
+      border-bottom: 1px solid #e9ecef;
+    }
+    #chat-room-list {
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+    .room-item {
+      display: flex;
+      align-items: center;
+      padding: 15px 20px;
+      border-bottom: 1px solid #e9ecef;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .room-item:hover {
+      background-color: #f8f9fa;
+    }
+    .room-item.active {
+      background-color: #f5efe6;
+    }
+    .room-item-img {
+      width: 50px;
+      height: 50px;
+      border-radius: 8px;
+      object-fit: cover;
+      margin-right: 15px;
+      background-color: #e9ecef;
+    }
+    .room-item-details {
+      display: flex;
+      position: relative;
+      flex-direction: column;
+      justify-content: center;
+      flex-grow: 1;
+      overflow: hidden;
+    }
+    .room-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .opponent-nickname {
+      font-weight: 500;
+      font-size: 15px;
+    }
+    .last-message-time {
+      font-size: 12px;
+      color: #868e96;
+      flex-shrink: 0;
+      margin-left: 8px;
+    }
+    .last-message-content {
+      font-size: 14px;
+      color: #495057;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 4px;
+    }
+    #chat-panel {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: #f8f9fa;
+    }
+    #chat-panel-header {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      border-bottom: 1px solid #dee2e6;
+      background-color: #fff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+    #header-product-image {
+      width: 45px;
+      height: 45px;
+      border-radius: 6px;
+      object-fit: cover;
+      margin-right: 15px;
+    }
+    #header-product-details {
+      flex-grow: 1;
+    }
+    #header-product-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+    #header-product-price {
+      font-size: 15px;
+      color: #b38b6d;
+      font-weight: 700;
+    }
+    #login-info {
+      font-size: 12px;
+      color: #868e96;
+      text-align: right;
+    }
+    #chat-window {
+      flex-grow: 1;
+      overflow-y: scroll;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    #chat-placeholder {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      color: #adb5bd;
+      font-size: 18px;
+    }
+    #chat-input-area {
+      display: flex;
+      align-items: center;
+      padding: 10px 15px;
+      background-color: #fff;
+      border-top: 1px solid #dee2e6;
+    }
+    #image-upload-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 24px;
+      padding: 0 12px 0 4px;
+      color: #868e96;
+      transition: color 0.2s;
+    }
+    #image-upload-btn:hover {
+      color: #495057;
+    }
+    #message-input {
+      flex-grow: 1;
+      margin-right: 10px;
+      padding: 12px 18px;
+      border-radius: 22px;
+      border: 1px solid #ced4da;
+      font-size: 15px;
+    }
+    #message-input:focus {
+      outline: none;
+      border-color: #b38b6d;
+    }
+    #send-btn {
+      padding: 0 20px;
+      border: none;
+      background-color: #b38b6d;
+      color: white;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+    #send-btn:hover {
+      background-color: #936a49;
+    }
+    .message-container {
+      display: flex;
+      align-items: flex-end;
+      margin-bottom: 12px;
+      max-width: 70%;
+    }
+    .message-container.sent {
+      align-self: flex-end;
+    }
+    .message-container.received {
+      align-self: flex-start;
+    }
+    .message {
+      padding: 10px 15px;
+      border-radius: 18px;
+      word-break: break-word;
+      line-height: 1.5;
+    }
+    .message.sent {
+      background-color: #eaddca;
+      border-bottom-right-radius: 4px;
+    }
+    .message.received {
+      background-color: #ffffff;
+      border: 1px solid #e9ecef;
+      border-bottom-left-radius: 4px;
+    }
+    .message img {
+      max-width: 250px;
+      max-height: 250px;
+      border-radius: 12px;
+      display: block;
+    }
+    .message.sent img,
+    .message.received img {
+      padding: 0;
+    }
+    .message-status {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      margin: 0 8px;
+      flex-shrink: 0;
+    }
+    .unread-indicator {
+      font-size: 12px;
+      font-weight: bold;
+      color: #e4a11b;
+      margin-bottom: 2px;
+    }
+    .message-time {
+      font-size: 11px;
+      color: #868e96;
+      flex-shrink: 0;
+    }
+    .unread-dot {
+      position: absolute;
+      top: 50%;
+      right: 15px;
+      transform: translateY(-50%);
+      width: 9px;
+      height: 9px;
+      background-color: #e4a11b;
+      border-radius: 50%;
+      border: 1px solid #fff;
+    }
+    .transaction-request {
+      background-color: #fff8e1;
+      border: 1px solid #ffecb3;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 10px auto;
+      width: 80%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    .transaction-request p {
+      margin: 0 0 12px 0;
+      font-size: 15px;
+      color: #5d4037;
+    }
+    .request-buttons button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 500;
+      margin: 0 5px;
+      transition: background-color 0.2s;
+    }
+    .btn-approve {
+      background-color: #28a745;
+      color: white;
+    }
+    .btn-approve:hover {
+      background-color: #218838;
+    }
+    .btn-reject {
+      background-color: #dc3545;
+      color: white;
+    }
+    .btn-reject:hover {
+      background-color: #c82333;
+    }
+    /* [추가] 헤더 버튼을 위한 공통 스타일 */
+    .header-action-btn {
+      background-color: #f0f0f0;
+      border: 1px solid #ccc;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
+      color: #333;
+      font-size: 14px;
+      font-weight: 500;
+      margin: 0 5px;
+    }
+    .header-action-btn:hover {
+      background-color: #e0e0e0;
+    }
+
+    /* [추가] 나가기 버튼을 위한 특별 스타일 */
+    #leave-chat-btn {
+      background-color: #ffdddd;
+      border-color: #ff9999;
+    }
+    #leave-chat-btn:hover {
+      background-color: #ffcccc;
+    }
+  </style>
+</head>
+<body>
+<div class="main-container">
+  <div id="room-list-panel">
+    <div id="room-list-header">チャット</div>
+    <div id="chat-room-list"></div>
+  </div>
+  <div id="chat-panel">
+    <div id="chat-panel-header" style="display: none">
+      <a href="/" class="header-action-btn">メインへ</a>
+      <img id="header-product-image" src="" alt="商品画像" />
+      <div id="header-product-details">
+        <div id="header-product-title"></div>
+        <div id="header-product-price"></div>
+      </div>
+      <div id="login-info">
+        <strong><span id="current-user-id"></span></strong> 様でログイン中
+      </div>
+      <button id="leave-chat-btn" class="header-action-btn">退出</button>
+    </div>
+    <div id="chat-window">
+      <div id="chat-placeholder">
+        <p>左側からチャットを選択してください。 🐻</p>
+      </div>
+    </div>
+    <div id="chat-input-area" style="display: none">
+      <button id="image-upload-btn" onclick="triggerImageUpload()">
+        ➕
+      </button>
+      <input
+              type="file"
+              id="image-file-input"
+              accept="image/*"
+              style="display: none"
+              onchange="handleImageSelect(event)"
+      />
+      <input
+              type="text"
+              id="message-input"
+              placeholder="メッセージを入力してください..."
+              onkeydown="handleEnterKey(event)"
+      />
+      <button id="send-btn" onclick="sendTextMessage()">送信</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let websocket = null;
+  let currentUserId = null;
+  let currentChatId = null;
+  let loadRequestCounter = 0;
+
+  // window.onload, resetChatPanel, loadChatRooms, selectChatRoom, loadPastMessages, connectWebSocket, updateChatRoomList,
+  // triggerImageUpload, handleImageSelect, sendImageMessage, sendTextMessage, handleEnterKey, formatMessageTime 함수들은
+  // 변경사항이 없으므로 생략합니다.
+  window.onload = async function () {
+    try {
+      const response = await fetch(`${window.location.origin}/api/user/me`);
+      if (!response.ok) {
+        alert("ログインが必要です。");
+        location.href = `${window.location.origin}/member/signIn`;
+        return;
+      }
+      const user = await response.json();
+      currentUserId = user.userId;
+      document.getElementById("current-user-id").textContent =
+        currentUserId;
+      const urlParams = new URLSearchParams(window.location.search);
+      const chatIdFromUrl = urlParams.get("chatId");
+      await loadChatRooms(chatIdFromUrl);
+      connectWebSocket();
+      addLeaveButtonListener();
+    } catch (error) {
+      console.error("初期化中にエラーが発生しました:", error);
+    }
+  };
+  function resetChatPanel() {
+    currentChatId = null;
+    const chatPanelHeader = document.getElementById("chat-panel-header");
+    if (chatPanelHeader) chatPanelHeader.style.display = "none";
+    const chatPlaceholder = document.getElementById("chat-placeholder");
+    if (chatPlaceholder) chatPlaceholder.style.display = "flex";
+    const chatInputArea = document.getElementById("chat-input-area");
+    if (chatInputArea) chatInputArea.style.display = "none";
+    const chatWindow = document.getElementById("chat-window");
+    if (chatWindow) chatWindow.innerHTML = "";
+    const currentActive = document.querySelector(".room-item.active");
+    if (currentActive) currentActive.classList.remove("active");
+  }
+  async function loadChatRooms(chatIdToSelect) {
+    try {
+      const response = await fetch(
+        `${window.location.origin}/api/chat/my-rooms`
+      );
+      if (!response.ok) {
+        throw new Error("チャットルームの読み込みに失敗しました。");
+      }
+      const chatRooms = await response.json();
+      const listElement = document.getElementById("chat-room-list");
+      listElement.innerHTML = "";
+      chatRooms.sort(
+        (a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt)
+      );
+      chatRooms.forEach((room) => {
+        const roomElement = document.createElement("div");
+        roomElement.className = "room-item";
+        roomElement.dataset.chatId = room.chatId;
+        roomElement.dataset.productTitle = room.productTitle;
+        roomElement.dataset.productPrice =
+          room.productPrice.toLocaleString("ja-JP") + "円";
+        roomElement.dataset.opponentNickname = room.opponentNickname;
+        roomElement.dataset.productImageUrl = room.productImageUrl;
+        roomElement.onclick = () => selectChatRoom(roomElement);
+        const lastTime = new Date(room.lastMessageAt);
+        const timeString =
+          lastTime.getHours().toString().padStart(2, "0") +
+          ":" +
+          lastTime.getMinutes().toString().padStart(2, "0");
+        const placeholderImg =
+          "https://placehold.co/100x100/E9ECEF/ADB5BD?text=Kumarket";
+        roomElement.innerHTML = ` <img class="room-item-img" src="${
+          room.productImageUrl || placeholderImg
+        }" alt="商品画像" onerror="this.src='${placeholderImg}'"> <div class="room-item-details"> ${
+          room.hasUnreadMessages ? '<span class="unread-dot"></span>' : ""
+        } <div class="room-item-header"> <span class="opponent-nickname">${
+          room.opponentNickname
+        }</span> <span class="last-message-time">${timeString}</span> </div> <div class="last-message-content">${
+          room.lastMessageContent
+        }</div> </div> `;
+        listElement.appendChild(roomElement);
+      });
+      if (chatIdToSelect) {
+        const roomToSelect = document.querySelector(
+          `.room-item[data-chat-id='${chatIdToSelect}']`
+        );
+        if (roomToSelect) {
+          selectChatRoom(roomToSelect);
+        } else {
+          resetChatPanel();
+        }
+      } else {
+        resetChatPanel();
+      }
+    } catch (error) {
+      console.error("チャットルームの読み込みに失敗しました:", error);
+    }
+  }
+  async function selectChatRoom(roomElement) {
+    const currentActive = document.querySelector(".room-item.active");
+    if (currentActive) currentActive.classList.remove("active");
+    roomElement.classList.add("active");
+    currentChatId = parseInt(roomElement.dataset.chatId);
+    loadRequestCounter++;
+    const currentRequestVersion = loadRequestCounter;
+    const dot = roomElement.querySelector(".unread-dot");
+    if (dot) dot.remove();
+    try {
+      await fetch(
+        `${window.location.origin}/api/chat/${currentChatId}/read`,
+        {
+          method: "POST",
+        }
+      );
+    } catch (error) {
+      console.error("既読処理APIの呼び出しに失敗しました:", error);
+    }
+    const placeholderImg =
+      "https://placehold.co/100x100/E9ECEF/ADB5BD?text=Kumarket";
+    const chatPanelHeader = document.getElementById("chat-panel-header");
+    if (chatPanelHeader) {
+      document.getElementById("header-product-image").src =
+        roomElement.dataset.productImageUrl || placeholderImg;
+      document.getElementById("header-product-image").onerror =
+        function () {
+          this.src = placeholderImg;
+        };
+      const productTitleEl = document.getElementById(
+        "header-product-title"
+      );
+      // product-id를 dataset에서 가져오도록 수정
+      const productId = roomElement.dataset.productId || "#";
+      productTitleEl.innerHTML = `
+    <a href="/product/detail/${productId}" style="text-decoration: none; color: inherit;">
+        ${roomElement.dataset.productTitle}
+    </a>
+  `;
+      document.getElementById("header-product-price").textContent =
+        roomElement.dataset.productPrice;
+      chatPanelHeader.style.display = "flex";
+    }
+    const chatPlaceholder = document.getElementById("chat-placeholder");
+    if (chatPlaceholder) chatPlaceholder.style.display = "none";
+    const chatInputArea = document.getElementById("chat-input-area");
+    if (chatInputArea) chatInputArea.style.display = "flex";
+    document.getElementById("chat-window").innerHTML = "";
+    await loadPastMessages(currentChatId, currentRequestVersion);
+
+
+  }
+  async function loadPastMessages(chatId, requestVersion) {
+    try {
+      const response = await fetch(
+        `${window.location.origin}/api/chat/${chatId}/messages`
+      );
+      const pastMessages = await response.json();
+      if (requestVersion !== loadRequestCounter) {
+        console.log(
+          `[重複防止] 前のリクエスト(${requestVersion})を無視します。最新のリクエスト: ${loadRequestCounter}`
+        );
+        return;
+      }
+      for (const message of pastMessages) {
+        displayMessage(message);
+      }
+    } catch (error) {
+      console.error("過去のメッセージの読み込みに失敗しました:", error);
+    }
+  }
+  function connectWebSocket() {
+    if (websocket && websocket.readyState === WebSocket.OPEN) {
+      return;
+    }
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const host = window.location.host;
+    websocket = new WebSocket(`${protocol}//${host}/ws/chat`);
+    websocket.onmessage = (event) => {
+      console.log("[WebSocket] メッセージ受信:", event.data);
+      const data = JSON.parse(event.data);
+      if (data.type === "MESSAGES_READ") {
+        const indicators = document.querySelectorAll(
+          `.unread-indicator[data-chat-id='${data.chatId}']`
+        );
+        indicators.forEach((indicator) => indicator.remove());
+      } else if (data.chatId === currentChatId) {
+        displayMessage(data);
+        try {
+          fetch(
+            `${window.location.origin}/api/chat/${currentChatId}/read`,
+            { method: "POST" }
+          );
+        } catch (error) {
+          console.error(
+            "リアルタイム既読処理APIの呼び出しに失敗しました:",
+            error
+          );
+        }
+      } else {
+        updateChatRoomList(data);
+      }
+    };
+    websocket.onclose = () =>
+      console.log("WebSocket接続が閉じられました。");
+    websocket.onerror = (error) =>
+      console.error("WebSocketエラーが発生しました:", error);
+  }
+  function updateChatRoomList(msg) {
+    const roomList = document.getElementById("chat-room-list");
+    const roomElement = roomList.querySelector(
+      `.room-item[data-chat-id='${msg.chatId}']`
+    );
+    if (roomElement) {
+      const lastMessageContent = roomElement.querySelector(
+        ".last-message-content"
+      );
+      if (lastMessageContent) lastMessageContent.textContent = msg.content;
+      const lastMessageTime =
+        roomElement.querySelector(".last-message-time");
+      if (lastMessageTime)
+        lastMessageTime.textContent = formatMessageTime(msg.createdDate);
+      if (!roomElement.querySelector(".unread-dot")) {
+        const detailsElement =
+          roomElement.querySelector(".room-item-details");
+        if (detailsElement) {
+          const dot = document.createElement("span");
+          dot.className = "unread-dot";
+          detailsElement.prepend(dot);
+        }
+      }
+      roomList.prepend(roomElement);
+    } else {
+      loadChatRooms();
+    }
+  }
+  function triggerImageUpload() {
+    if (!currentChatId) return;
+    document.getElementById("image-file-input").click();
+  }
+  async function handleImageSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      const response = await fetch(
+        `${window.location.origin}/api/chat/image`,
+        { method: "POST", body: formData }
+      );
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "画像アップロードに失敗しました");
+      }
+      const result = await response.json();
+      sendImageMessage(result.imageUrl);
+    } catch (error) {
+      console.error("画像アップロードエラー:", error);
+      alert("画像アップロードに失敗しました。");
+    } finally {
+      event.target.value = "";
+    }
+  }
+  function sendImageMessage(imageUrl) {
+    if (!websocket || websocket.readyState !== WebSocket.OPEN) {
+      console.error("WebSocketが接続されていません。");
+      return;
+    }
+    const payload = {
+      chatId: currentChatId,
+      imageUrl: imageUrl,
+      messageType: "IMAGE",
+    };
+    websocket.send(JSON.stringify(payload));
+    displayMessage({
+      senderId: currentUserId,
+      imageUrl: imageUrl,
+      createdDate: new Date().toISOString(),
+      chatId: currentChatId,
+      read: false,
+      messageType: "IMAGE",
+    });
+  }
+  function sendTextMessage() {
+    if (!websocket || websocket.readyState !== WebSocket.OPEN) {
+      console.error(
+        "WebSocketが接続されていないため、メッセージを送信できません。"
+      );
+      return;
+    }
+    const messageInput = document.getElementById("message-input");
+    const content = messageInput.value.trim();
+    if (content === "") return;
+    const payload = {
+      chatId: currentChatId,
+      content: content,
+      messageType: "TEXT",
+    };
+    websocket.send(JSON.stringify(payload));
+    displayMessage({
+      senderId: currentUserId,
+      content,
+      createdDate: new Date().toISOString(),
+      chatId: currentChatId,
+      read: false,
+      messageType: "TEXT",
+    });
+    messageInput.value = "";
+  }
+  function handleEnterKey(event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      sendTextMessage();
+    }
+  }
+  function formatMessageTime(isoString) {
+    if (!isoString) return "";
+    const date = new Date(isoString);
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    return `${hours}:${minutes}`;
+  }
+
+  function displayMessage(msg) {
+    const chatWindow = document.getElementById("chat-window");
+    const typeClass = msg.senderId === currentUserId ? "sent" : "received";
+
+    // 1. 메시지 타입에 따라 분기 처리
+    if (msg.messageType === "TRANSACTION_REQUEST") {
+      if (msg.senderId === currentUserId) return;
+      const requestData = JSON.parse(msg.content);
+      const systemMsgContainer = document.createElement("div");
+      systemMsgContainer.innerHTML = `
+    <div class="transaction-request" id="request-${requestData.transactionId}">
+      <p><strong>${requestData.buyerNickname}</strong>様が購入リクエストを送信しました。</p>
+      <div class="request-buttons">
+        <button class="btn-approve" data-transaction-id="${requestData.transactionId}" data-action="APPROVED">承認</button>
+        <button class="btn-reject" data-transaction-id="${requestData.transactionId}" data-action="REJECTED">拒否</button>
+      </div>
+    </div>`;
+      chatWindow.appendChild(systemMsgContainer);
+    } else if (msg.messageType === "TRANSACTION_TYPE_SELECT") {
+      const requestData = JSON.parse(msg.content);
+      const systemMsgContainer = document.createElement("div");
+      systemMsgContainer.innerHTML = `
+    <div class="transaction-request" id="select-type-${requestData.transactionId}">
+      <p><strong>取引方法を選択してください。</strong></p>
+      <div class="request-buttons">
+        <button class="btn-select-type" data-transaction-id="${requestData.transactionId}" data-value="DIRECT_TRADE">対面取引</button>
+        <button class="btn-select-type" data-transaction-id="${requestData.transactionId}" data-value="DELIVERY_SERVICE">宅配便</button>
+      </div>
+    </div>`;
+      chatWindow.appendChild(systemMsgContainer);
+    } else if (msg.messageType === "PAYMENT_METHOD_SELECT") {
+      const requestData = JSON.parse(msg.content);
+      const systemMsgContainer = document.createElement("div");
+      systemMsgContainer.innerHTML = `
+    <div class="transaction-request" id="select-payment-${requestData.transactionId}">
+      <p><strong>決済方法を選択してください。</strong></p>
+      <div class="request-buttons">
+        <button class="btn-select-payment" data-transaction-id="${requestData.transactionId}" data-delivery="DIRECT_TRADE" data-value="CARD">カード</button>
+        <button class="btn-select-payment" data-transaction-id="${requestData.transactionId}" data-delivery="DIRECT_TRADE" data-value="CASH">現金</button>
+      </div>
+    </div>`;
+      chatWindow.appendChild(systemMsgContainer);
+    } else if (msg.messageType === "SHIPPING_INFO_REQUEST") {
+      const requestData = JSON.parse(msg.content);
+      const systemMsgContainer = document.createElement("div");
+      systemMsgContainer.innerHTML = `
+    <div class="transaction-request" id="shipping-request-${requestData.transactionId}">
+      <p><strong>お支払いが完了しました。<br>配送情報を入力してください。</strong></p>
+      <div class="request-buttons">
+        <button class="btn-open-shipping" data-transaction-id="${requestData.transactionId}">配送情報を入力</button>
+      </div>
+    </div>`;
+      chatWindow.appendChild(systemMsgContainer);
+    } else if (msg.messageType === "PURCHASE_CONFIRM_REQUEST") {
+      const requestData = JSON.parse(msg.content);
+      const systemMsgContainer = document.createElement("div");
+      systemMsgContainer.innerHTML = `
+    <div class="transaction-request" id="confirm-purchase-${requestData.transactionId}">
+      <p><strong>商品を無事受け取りましたか？<br>取引を完了するには「購入確定」ボタンを押してください。</strong></p>
+      <div class="request-buttons">
+        <button class="btn-confirm-purchase" data-transaction-id="${requestData.transactionId}">購入確定</button>
+      </div>
+    </div>`;
+      chatWindow.appendChild(systemMsgContainer);
+    } else if (msg.messageType === "REVIEW_REQUEST") {
+      const requestData = JSON.parse(msg.content);
+      const systemMsgContainer = document.createElement("div");
+      systemMsgContainer.innerHTML = `
+    <div class="transaction-request" id="review-request-${requestData.transactionId}">
+      <p><strong>取引はいかがでしたか？<br>出品者にレビューを残してください！</strong></p>
+      <div class="request-buttons">
+        <button class="btn-write-review" data-transaction-id="${requestData.transactionId}">レビューを作成</button>
+      </div>
+    </div>`;
+      chatWindow.appendChild(systemMsgContainer);
+    } else if (msg.messageType === "CASH_PAYMENT_SELECTED") {
+      const requestData = JSON.parse(msg.content);
+      const systemMsgContainer = document.createElement("div");
+      let buttonsHtml = "";
+      if (currentUserId === requestData.sellerId) {
+        // 판매자에게만 버튼 표시
+        buttonsHtml = `<div class="request-buttons"><button class="btn-hand-over" data-transaction-id="${requestData.transactionId}">商品受け渡し完了</button></div>`;
+      }
+      systemMsgContainer.innerHTML = `
+    <div class="transaction-request" id="cash-selected-${requestData.transactionId}">
+      <p><strong>現金決済が選択されました。<br>会って取引する場所と時間を調整してください。</strong></p>
+      ${buttonsHtml}
+    </div>`;
+      chatWindow.appendChild(systemMsgContainer);
+    } else if (msg.messageType === "ITEM_RECEIVED_CHECK") {
+      if (msg.senderId === currentUserId) return; // 구매자에게만 표시
+      const requestData = JSON.parse(msg.content);
+      const systemMsgContainer = document.createElement("div");
+      systemMsgContainer.innerHTML = `
+    <div class="transaction-request" id="receive-check-${requestData.transactionId}">
+      <p><strong>商品を無事受け取りましたか？</strong></p>
+      <div class="request-buttons">
+        <button class="btn-item-received" data-transaction-id="${requestData.transactionId}">はい、受け取りました</button>
+      </div>
+    </div>`;
+      chatWindow.appendChild(systemMsgContainer);
+    } else {
+      // 일반 TEXT, IMAGE 메시지 처리
+      const containerEl = document.createElement("div");
+      containerEl.className = `message-container ${typeClass}`;
+      const msgEl = document.createElement("div");
+      msgEl.className = `message ${typeClass}`;
+
+      if (msg.messageType === "IMAGE") {
+        const img = document.createElement("img");
+        img.src = msg.imageUrl;
+        img.alt = "チャット画像";
+        img.onload = () => {
+          chatWindow.scrollTop = chatWindow.scrollHeight;
+        };
+        msgEl.appendChild(img);
+      } else {
+        msgEl.textContent = msg.content;
+      }
+
+      const statusEl = document.createElement("div");
+      statusEl.className = "message-status";
+      if (typeClass === "sent" && !msg.read) {
+        const unreadEl = document.createElement("span");
+        unreadEl.className = "unread-indicator";
+        unreadEl.textContent = "1";
+        unreadEl.dataset.chatId = msg.chatId;
+        statusEl.appendChild(unreadEl);
+      }
+      const timeEl = document.createElement("span");
+      timeEl.className = "message-time";
+      timeEl.textContent = formatMessageTime(msg.createdDate);
+      statusEl.appendChild(timeEl);
+
+      if (typeClass === "sent") {
+        containerEl.appendChild(statusEl);
+        containerEl.appendChild(msgEl);
+      } else {
+        containerEl.appendChild(msgEl);
+        containerEl.appendChild(statusEl);
+      }
+      chatWindow.appendChild(containerEl);
+    }
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  }
+  // [추가] 채팅방 나가기 버튼에 대한 이벤트 리스너를 추가하는 함수입니다.
+  function addLeaveButtonListener() {
+    const leaveButton = document.getElementById("leave-chat-btn");
+    if (!leaveButton) return; // 버튼이 없으면 종료
+
+    leaveButton.addEventListener("click", async () => {
+      if (!currentChatId) {
+        alert("チャットルームが選択されていません。");
+        return;
+      }
+
+      // 사용자에게 나가기 전에 재확인 받습니다.
+      const isConfirmed = confirm(
+        "本当にこのチャットルームから退出しますか？"
+      );
+      if (!isConfirmed) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/chat/${currentChatId}/leave`, {
+          method: "POST",
+        });
+
+        if (response.ok) {
+          alert("チャットルームから退出しました。");
+          // 채팅방을 나간 후, 채팅 목록을 새로고침하고 현재 채팅창을 초기화합니다.
+          resetChatPanel(); // 현재 열려있는 채팅창 닫기
+          loadChatRooms(); // 채팅 목록 새로고침
+        } else {
+          // 서버에서 보낸 에러 메시지를 표시합니다.
+          const errorData = await response.json();
+          alert(
+            "エラー: " + (errorData.message || "退出できませんでした。")
+          );
+        }
+      } catch (error) {
+        console.error("채팅방 나가기 실패:", error);
+        alert("エラーが発生しました。");
+      }
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const chatWindow = document.getElementById("chat-window");
+
+    chatWindow.addEventListener("click", async function (event) {
+      const target = event.target; // 클릭된 요소
+
+      if (target.matches(".btn-confirm-purchase")) {
+        const transactionId = target.dataset.transactionId;
+        if (
+          !confirm(
+            "購入を確定すると、取引が最終的に終了します。よろしいですか？"
+          )
+        )
+          return;
+        try {
+          const response = await fetch(
+            `/api/transactions/${transactionId}/confirm`,
+            { method: "POST" }
+          );
+          if (!response.ok)
+            throw new Error(
+              "購入確定の処理に失敗しました。もう一度お試しください。"
+            );
+          target.closest(
+            ".transaction-request"
+          ).innerHTML = `<p><strong>購入が確定しました。</strong></p>`;
+        } catch (error) {
+          alert(error.message);
+        }
+      } else if (target.matches(".btn-write-review")) {
+        const transactionId = target.dataset.transactionId;
+        window.open(
+          `/review.html?transactionId=${transactionId}`,
+          "reviewPopup",
+          "width=500,height=650,scrollbars=yes,resizable=yes"
+        );
+        target.closest(
+          ".transaction-request"
+        ).innerHTML = `<p><strong>レビュー作成のポップアップを開きました。</strong></p>`;
+      } else if (target.matches(".btn-open-shipping")) {
+        const transactionId = target.dataset.transactionId;
+        window.open(
+          `/shipping.html?transactionId=${transactionId}`,
+          "shippingPopup",
+          "width=500,height=600,scrollbars=yes,resizable=yes"
+        );
+        //삭제?
+        //target.closest(".transaction-request").innerHTML = `<p><strong>配送情報入力のポップアップを開きました。</strong></p>`;
+      } else if (
+        target.matches(".btn-approve") ||
+        target.matches(".btn-reject")
+      ) {
+        const transactionId = target.dataset.transactionId;
+        const action = target.dataset.action;
+        if (
+          !confirm(
+            `この取引を「${
+              action === "APPROVED" ? "承認" : "拒否"
+            }」しますか？`
+          )
+        )
+          return;
+        try {
+          const response = await fetch(
+            `/api/transactions/${transactionId}/approval`,
+            {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ status: action }),
+            }
+          );
+          if (!response.ok) throw new Error("処理に失敗しました。");
+          alert(
+            `取引を「${action === "APPROVED" ? "承認" : "拒否"}」しました。`
+          );
+          const buttonContainer = target.closest(".request-buttons");
+          if (action === "APPROVED") {
+            buttonContainer.innerHTML = `<p><strong>承認しました。購入者の選択をお待ちください。</strong></p>`;
+          } else {
+            buttonContainer.innerHTML = `<p><strong>拒否しました。</strong></p>`;
+          }
+        } catch (error) {
+          alert(error.message);
+        }
+      } else if (target.matches(".btn-select-type")) {
+        const transactionId = target.dataset.transactionId;
+        const selectedType = target.dataset.value;
+        if (selectedType === "DELIVERY_SERVICE") {
+          try {
+            const response = await fetch(
+              `/api/transactions/${transactionId}/type`,
+              {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  deliveryService: "DELIVERY_SERVICE",
+                  paymentMethod: "CARD",
+                }),
+              }
+            );
+            if (!response.ok) throw new Error("処理に失敗しました。");
+            //삭제해도 됨
+            //target.closest(".transaction-request").innerHTML = `<p style="text-align:center; margin: 15px 0;"><strong>宅配便を選択しました。決済ページに移動します。</strong></p>`;
+            window.open(
+              `/payment.html?transactionId=${transactionId}`,
+              "paymentPopup",
+              "width=500,height=700"
+            );
+          } catch (error) {
+            alert(error.message);
+          }
+        } else if (selectedType === "DIRECT_TRADE") {
+          target.closest(".transaction-request").innerHTML = `
+        <p><strong>決済方法を選択してください。</strong></p>
+        <div class="request-buttons">
+          <button class="btn-select-payment" data-transaction-id="${transactionId}" data-delivery="DIRECT_TRADE" data-value="CARD">カード</button>
+          <button class="btn-select-payment" data-transaction-id="${transactionId}" data-delivery="DIRECT_TRADE" data-value="CASH">現金</button>
+        </div>`;
+        }
+      } else if (target.matches(".btn-select-payment")) {
+        const transactionId = target.dataset.transactionId;
+        const deliveryType = target.dataset.delivery;
+        const paymentType = target.dataset.value;
+        try {
+          const response = await fetch(
+            `/api/transactions/${transactionId}/type`,
+            {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                deliveryService: deliveryType,
+                paymentMethod: paymentType,
+              }),
+            }
+          );
+          if (!response.ok) throw new Error("処理に失敗しました。");
+          const parentRequestDiv = target.closest(".transaction-request");
+          if (paymentType === "CARD") {
+            //삭제?
+            //parentRequestDiv.innerHTML = `<p style="text-align:center; margin: 15px 0;"><strong>カード決済を選択しました。決済ページに移動します。</strong></p>`;
+            window.open(
+              `/payment.html?transactionId=${transactionId}`,
+              "paymentPopup",
+              "width=500,height=700"
+            );
+          } else if (paymentType === "CASH") {
+            parentRequestDiv.innerHTML = `<p style="text-align:center; margin: 15px 0;"><strong>現金決済を選択しました。</strong></p>`;
+            if (websocket && websocket.readyState === WebSocket.OPEN) {
+              const payload = {
+                chatId: currentChatId,
+                content: "現金決済を選択しました。",
+                messageType: "TEXT",
+              };
+              websocket.send(JSON.stringify(payload));
+              displayMessage({
+                senderId: currentUserId,
+                content: "現金決済を選択しました。",
+                createdDate: new Date().toISOString(),
+                messageType: "TEXT",
+              });
+            }
+          }
+        } catch (error) {
+          alert(error.message);
+        }
+      } else if (target.matches(".btn-hand-over")) {
+        const transactionId = target.dataset.transactionId;
+        if (!confirm("購入者に商品を渡しましたか？")) return;
+        try {
+          const response = await fetch(
+            `/api/transactions/${transactionId}/hand-over`,
+            { method: "POST" }
+          );
+          if (!response.ok)
+            throw new Error("処理中にエラーが発生しました。");
+          target.closest(
+            ".transaction-request"
+          ).innerHTML = `<p><strong>購入者に商品受け取り確認を要請しました。</strong></p>`;
+        } catch (error) {
+          alert(error.message);
+        }
+      } else if (target.matches(".btn-item-received")) {
+        const transactionId = target.dataset.transactionId;
+        try {
+          const response = await fetch(
+            `/api/transactions/${transactionId}/receive-item`,
+            { method: "POST" }
+          );
+          if (!response.ok)
+            throw new Error("処理中にエラーが発生しました。");
+          target.closest(
+            ".transaction-request"
+          ).innerHTML = `<p><strong>商品の受け取りを確認しました。</strong></p>`;
+        } catch (error) {
+          alert(error.message);
+        }
+      }
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+    <body>
+        <footer th:fragment="commonFooter">
+            <div class="footer-container">
+                <div class="footer-info">
+                    <h3>クマケット</h3>
+                    <p>
+                        DSA 第11期 第1チーム 中古取引プラットフォーム<br />
+                        会社名: 株式会社クマケット | 代表: クマ<br />
+                        事業者登録番号: 123-45-67890<br />
+                        住所: 釜山広域市 中区 中央洞
+                    </p>
+                </div>
+                <div class="footer-links">
+                    <h4>クイックリンク</h4>
+                    <ul>
+                        <li><a th:href="@{/}">ホーム</a></li>
+                        <li><a th:href="@{/inquires}">お問い合わせ掲示板</a></li>
+                        <li><a href="#">よくある質問</a></li>
+                        <li><a href="#">利用規約</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Kumarketto. All Rights Reserved.</p>
+            </div>
+        </footer>
+    </body>
+</html>

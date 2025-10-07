@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>クマケット | マイページ（コンパクト修正版）</title>
+
+  <link rel="stylesheet" th:href="@{/css/common/main.css}" />
+  <link rel="stylesheet" th:href="@{/css/common/header.css}" />
+  <link rel="stylesheet" th:href="@{/css/common/mypage.css}" />
+  <link rel="stylesheet" th:href="@{/css/common/sidebar.css}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    /* ===== 폼 ===== */
+    form{ display:grid; gap:12px; }
+    .field{
+      display:grid; grid-template-columns: 120px minmax(0,1fr) auto; gap:10px; align-items:center;
+    }
+    .field label{ font-size:13px; color:#555; font-weight:700; }
+    .input, .input[readonly]{ width:100%; padding:10px; border:1px solid var(--line); border-radius:10px; background:#fff; font-size:14px; }
+    .input:focus{ outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(255,138,101,.18); }
+    .hint{ grid-column:2 / -1; font-size:12px; color:#888; margin-top:-6px; }
+
+    /* 버튼 */
+    .btn{ display:inline-flex; align-items:center; justify-content:center; gap:6px; border:1px solid var(--line); background:#fff; color:#333; padding:8px 12px; border-radius:10px; font-size:13px; text-decoration:none; cursor:pointer; transition: all .2s ease; }
+    .btn.primary{ border-color: var(--primary); background: var(--primary); color:#fff; }
+    .btn.primary:hover:enabled{ background: var(--primary-dark); }
+    .btn.ghost:hover:enabled{ border-color: var(--primary); color: var(--primary); }
+    .btn:disabled{ background:#f5f5f5; border-color:var(--line); color:var(--muted); cursor:not-allowed; opacity:0.7; }
+
+    .actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:6px; }
+    .danger{ color:#B00020; font-size:12.5px; }
+
+    /* 단계 토글 */
+    .step{ display:none; }
+    .step.active{ display:block; }
+
+    /* 섹션 고정폭 기준 맞춤 */
+    section.step{ width: 100%; max-width: 100%; }
+
+  </style>
+</head>
+<body>
+
+<div th:replace="fragments/header :: commonHeader"></div>
+
+<main class="page">
+  <!-- 좌측 사이드바 -->
+  <div th:replace="fragments/sidebar :: commonSidebar"></div>
+
+  <!-- 우측 콘텐츠 -->
+  <section class="section" th:with="verified=${verified}">
+    <div class="section-head">
+      <h2>個人情報の変更</h2>
+    </div>
+
+    <!-- STEP 1: 비밀번호 확인 -->
+    <div id="stepVerify" class="step active" th:classappend="${verified} ? '' : ' active'">
+      <form th:action="@{/myPage/profile/verify}" method="post" id="verifyForm">
+        <div class="field">
+          <label for="curPwd">パスワード</label>
+          <input id="curPwd" name="password" type="password" class="input" placeholder="現在のパスワードを入力"
+                 autocomplete="current-password" required/>
+          <button type="submit" class="btn primary" id="btnVerify">確認</button>
+        </div>
+        <p class="hint">ご本人確認のため、現在のパスワードを入力してください。</p>
+        <p class="danger" id="verifyError" style="display:none;">パスワードが一致しません。</p>
+      </form>
+    </div>
+
+    <!-- STEP 2: 정보 입력/수정 -->
+    <div id="stepEdit" class="step" th:classappend="${verified} ? ' active' : ''">
+      <form th:action="@{/myPage/profile}" method="post" th:object="${member}" id="editForm">
+        <div class="field">
+          <label for="uid">ID</label>
+          <input id="uid" class="input" readonly th:value="${user.userId}">
+        </div>
+
+        <div class="field">
+          <label for="pwd">パスワード</label>
+          <input id="pwd" name="password" type="password" class="input" placeholder="新しいパスワード"
+                 autocomplete="new-password">
+          <p class="hint">入力されない場合現在のパスワードが維持されます。</p>
+        </div>
+
+        <div class="field">
+          <label for="pwd2">パスワード確認</label>
+          <input id="pwd2" type="password" class="input" placeholder="もう一度入力" autocomplete="new-password"/>
+          <p class="hint">新しいパスワードを変更する場合のみ入力してください。</p>
+        </div>
+
+        <div class="field">
+          <label>生年月日</label>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <select id="year" name="year" class="input" required>
+              <option value="">年</option>
+              <option th:each="year : ${#numbers.sequence(T(java.time.Year).now().value,1920,-1)}"
+                      th:value="${year}"
+                      th:text="${year}"
+                      th:selected="${user.birthDate != null and user.birthDate.year == year}"></option>
+            </select>
+
+            <select id="month" name="month" class="input" required>
+              <option value="">月</option>
+              <option th:each="month : ${#numbers.sequence(1, 12)}"
+                      th:value="${month}"
+                      th:text="${month}"
+                      th:selected="${user.birthDate != null and user.birthDate.monthValue == month}"></option>
+            </select>
+
+            <select id="day" name="day" class="input" required>
+              <option value="">日</option>
+              <option th:each="day : ${#numbers.sequence(1, 31)}"
+                      th:value="${day}"
+                      th:text="${day}"
+                      th:selected="${user.birthDate != null and user.birthDate.dayOfMonth == day}"></option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="email">Eメール</label>
+          <input id="email" name="email" type="email" class="input" required th:value="${user.email}">
+          <button type="button" class="btn" id="btnEmailCheck" disabled>重複検査</button>
+        </div>
+
+        <div class="field">
+          <label for="phone">携帯電話</label>
+          <input id="phone" name="phone" type="tel" class="input" th:value="${user.phone}">
+        </div>
+
+        <div class="field">
+          <label for="nick">ニックネーム</label>
+          <input id="nick" name="nickname" type="text" class="input" th:value="${user.nickname}">
+          <button type="button" class="btn" id="btnNickCheck" disabled>重複検査</button>
+        </div>
+
+        <div class="actions">
+          <a th:href="@{/myPage}" class="btn">取消</a>
+          <button type="submit" class="btn primary" id="btnSave">修正</button>
+        </div>
+
+        <p class="danger" id="saveError" style="display:none;">入力内容を確認してください。</p>
+      </form>
+    </div>
+  </section>
+</main>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const verifyForm = document.getElementById("verifyForm");
+        const curPwd = document.getElementById("curPwd");
+        const errorMsg = document.getElementById("verifyError");
+        const stepVerify = document.getElementById("stepVerify");
+        const stepEdit = document.getElementById("stepEdit");
+
+        verifyForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const pw = curPwd.value.trim();
+
+            fetch(verifyForm.action, {
+                method: "POST",
+                headers: {
+                    "Content-type": "application/json",
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                body: JSON.stringify({ password: pw })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.userId != null && data.userId != "") {
+                    stepVerify.style.display = "none";
+                    stepEdit.style.display = "block";
+                    errorMsg.style.display = "none";
+                } else {
+                    errorMsg.style.display = "block";
+                }
+            })
+            .catch(err => console.error(err));
+        });
+
+        const editForm = document.getElementById("editForm");
+
+        const emailBtn = document.getElementById("btnEmailCheck");
+        const nickBtn = document.getElementById("btnNickCheck");
+
+        const emailInput = document.getElementById("email");
+        const phoneInput = document.getElementById("phone");
+        const nickInput = document.getElementById("nick");
+        const yearInput = document.getElementById("year");
+        const monthInput = document.getElementById("month");
+        const dayInput = document.getElementById("day");
+        const pwdInput = document.getElementById("pwd");
+        const pwdConfirmInput = document.getElementById("pwd2");
+
+        const prevEmail = emailInput.value.trim();
+        const prevNick = nickInput.value.trim();
+
+        let emailChecked = true;
+        let nicknameChecked = true;
+
+        emailInput.addEventListener("input", () => {
+          if(emailInput.value.trim() !== prevEmail) {
+              emailBtn.disabled = false;
+              emailChecked = false;
+          } else {
+            emailBtn.disabled = true;
+            emailChecked = true;
+          }
+        });
+
+        nickInput.addEventListener("input", () => {
+          if(nickInput.value.trim() !== prevNick) {
+              nickBtn.disabled = false;
+              nickChecked = false;
+          } else {
+            nickBtn.disabled = true;
+            nickChecked = true;
+          }
+        });
+
+        emailBtn.addEventListener("click", function (e) {
+            const email = emailInput.value.trim();
+            if(!email) { alert("メールアドレスを入力してください。"); return; }
+            if(!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+                alert("メールアドレスを正しい形式で入力してください。");
+                return;
+            }
+
+            fetch("/member/emailDupCheck", {
+                method: "POST",
+                headers: {"Content-Type": "application/x-www-form-urlencoded"},
+                body: new URLSearchParams({email})
+            })
+            .then(res => res.json())
+            .then(exists => {
+                if(exists) {
+                    alert("入力されたメールアドレスは既にご登録されています。他のメールアドレスを入力してください。");
+                    emailChecked = false;
+                } else {
+                    alert("このメールアドレスは利用可能です。");
+                    emailChecked = true;
+                }
+            })
+            .catch(() => alert("サーバーエラー"));
+        });
+
+        nickBtn.addEventListener("click", function (e) {
+            const nickname = nickInput.value.trim();
+
+            fetch("/member/nicknameDupCheck", {
+                method: "POST",
+                headers: {"Content-Type": "application/x-www-form-urlencoded"},
+                body: new URLSearchParams({nickname})
+            })
+            .then(res => res.json())
+            .then(exists => {
+                if(exists) {
+                    alert("入力されたニックネームは既にご登録されています。他のニックネームを入力してください。");
+                    nicknameChecked = false;
+                } else {
+                    alert("このニックネームは利用可能です。");
+                    nicknameChecked = true;
+                }
+            })
+            .catch(() => alert("サーバーエラー"));
+        });
+
+
+        editForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            if (!nickInput.value.trim()) {
+              nickInput.value = document.getElementById("uid").value.trim();
+            }
+
+            if (!emailChecked) return alert("メールアドレスの重複検査をしてください。");
+            if (!nicknameChecked) return alert("ニックネームの重複検査をしてください。");
+
+            const phone = phoneInput.value.trim();
+            if (phone && !/^0[789]0-?\d{4}-?\d{4}$/.test(phone)) {
+              return alert("電話番号の形式が正しくありません。");
+            }
+
+            const pwd = pwdInput.value.trim();
+            const pwdConfirm = pwdConfirmInput.value.trim();
+
+            if(pwd) {
+              if (!pwdConfirm) return alert("パスワードを再度入力してください。");
+              if (pwd !== pwdConfirm) return alert("パスワードが一致しません。");
+              if (!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*?_])[A-Za-z\d!@#$%^&*?_]{8,12}$/.test(pwd)) {
+                return alert("パスワードは英字（a～z、A～Z）、数字（0～9）、記号の3種類を組合せた8～12桁の半角文字でご入力ください。");
+              }
+
+              fetch("/myPage/profile/checkPassword", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-Requested-With": "XMLHttpRequest"
+                },
+                body: JSON.stringify({
+                  newPassword: pwd
+                })
+              })
+              .then(res => res.json())
+              .then(data => {
+                if(data.same) {
+                  alert("既存パスワードと同じです。他のパスワードを入力してください。");
+                  return;
+                } else {
+                  editForm.submit();
+                }
+              })
+              .catch(err => {
+                console.error(err);
+                alert("サーバーエラー");
+              });
+            } else {
+              editForm.submit();
+            }
+        });
+    });
+</script>
+</body>
+</html>

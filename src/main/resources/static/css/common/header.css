@@ -1,0 +1,221 @@
+/* header 태그 자체에 대한 스타일 */
+header {
+    background-color: #fff;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 2px 4px var(--shadow-color);
+    margin-bottom: 24px;
+    width: 100%;
+}
+
+/* 헤더 콘텐츠를 중앙에 정렬하고 최대 너비를 지정하는 컨테이너 */
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    height: 80px;
+}
+
+/* 로고 */
+.logo a {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+/* 검색창 */
+.search-container {
+    flex-grow: 1;
+    position: relative;
+    max-width: 500px;
+    margin: 0 20px;
+}
+
+/* 검색 입력 필드와 버튼을 감싸는 그룹 */
+.search-input-group {
+    display: flex;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #fff;
+    box-shadow: 0 1px 4px var(--shadow-color);
+    transition: all 0.2s ease-in-out;
+}
+
+/* 검색창 그룹에 포커스 되었을 때 */
+.search-input-group:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 138, 101, 0.2);
+}
+
+#search-bar {
+    flex-grow: 1;
+    padding: 12px 15px;
+    border: none;
+    outline: none;
+    font-size: 0.95rem;
+    color: var(--text-color);
+    background-color: transparent;
+}
+
+/* 검색 버튼 스타일 */
+.search-button {
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 12px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border-radius: 0 8px 8px 0;
+}
+
+.search-button:hover {
+    background-color: var(--primary-dark-color);
+}
+
+/* 최근 검색어 */
+.recent-searches {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    width: 100%;
+    background-color: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px var(--shadow-color);
+    z-index: 1000;
+    display: none;
+    overflow: hidden;
+}
+
+.recent-searches-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    font-size: 0.85rem;
+    color: #666;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#clear-searches {
+    color: var(--primary-color);
+    font-size: 0.8rem;
+    padding: 5px 8px;
+    border-radius: 4px;
+    background-color: #fff;
+    border: 1px solid var(--primary-color);
+    transition: all 0.2s;
+}
+
+#clear-searches:hover {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+#recent-searches-list li {
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+#recent-searches-list li:hover {
+    background-color: var(--light-gray);
+}
+
+#recent-searches-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: default;
+    transition: background-color 0.2s;
+}
+
+#recent-searches-list .keyword-text {
+    flex-grow: 1;
+    cursor: pointer;
+}
+
+#recent-searches-list li:hover {
+    background-color: #f5f5f5;
+}
+
+.delete-search-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #aaa;
+    font-size: 1rem;
+    padding: 0 4px;
+    margin-left: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: color 0.2s, opacity 0.2s;
+}
+
+.delete-search-btn:hover {
+    color: #333;
+    opacity: 1;
+}
+
+.delete-search-btn .fa-times {
+    pointer-events: none;
+}
+
+/* 사용자 메뉴 (로그인/회원가입 버튼) */
+.user-menu {
+    display: flex;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+/* 공통 메뉴 버튼 스타일 */
+.menu-button {
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 500;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    background-color: #fff;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+/* hover 시 */
+.menu-button:hover {
+    border-color: var(--primary-color);
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+/* 현재 위치한 페이지와 href가 같을 때 active 효과 */
+.menu-button.active {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #fff;
+}
+
+
+
+.header-chat-icon {
+    font-size: 1.5rem; /* 아이콘 크기 (조정 가능) */
+    color: #333; /* 아이콘 색상 */
+    text-decoration: none;
+    transition: color 0.2s;
+    margin-left: 15px; /* 다른 아이콘과의 간격 */
+}
+
+.header-chat-icon:hover {
+    color: #ff7f50; /* 마우스를 올렸을 때 색상 */
+}

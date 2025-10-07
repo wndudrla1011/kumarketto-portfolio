@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja-JP" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>クマケット</title>
+        <link rel="stylesheet" th:href="@{/css/common/main.css}" />
+        <link rel="stylesheet" th:href="@{/css/main/banner.css}" />
+        <link rel="stylesheet" th:href="@{/css/common/header.css}" />
+        <link rel="stylesheet" th:href="@{/css/transactions/transaction.css}" />
+        <link rel="stylesheet" th:href="@{/css/transactions/shipment.css}" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <script th:src="@{/js/setLoginRedirect.js}"></script>
+        <script src="https://js.stripe.com/v3/"></script>
+    </head>
+    <link rel="stylesheet" href="/css/notification.css" />
+    <script src="/js/global-notifications.js"></script>
+    <body>
+        <div class="container">
+            <!-- header -->
+            <div th:replace="~{fragments/header :: commonHeader}"></div>
+
+            <!-- Banner -->
+            <section id="banner-container" class="banner-container">
+                <div id="banner-carousel" class="banner-carousel"></div>
+                <button id="prev-btn" class="banner-nav-button prev"><i class="fas fa-chevron-left"></i></button>
+                <button id="next-btn" class="banner-nav-button next"><i class="fas fa-chevron-right"></i></button>
+                <div id="banner-dots" class="banner-dots"></div>
+            </section>
+
+            <main>
+                <!-- 필터 -->
+                <aside class="filters">
+                    <!-- Reset Filter -->
+                    <div class="filters-header">
+                        <h3><i class="fas fa-filter"></i> フィルター</h3>
+                        <button id="reset-filters-btn" class="reset-button">
+                            <i class="fas fa-rotate-left"></i> 初期化
+                        </button>
+                    </div>
+
+                    <!-- 지역 -->
+                    <div class="filter-group">
+                        <label for="region">エリア</label>
+                        <div class="location-selects">
+                            <select id="region">
+                                <option value="">地方を選択</option>
+                                <option
+                                    th:each="region : ${locations}"
+                                    th:value="${region.rgnId}"
+                                    th:text="${region.rgnName}"
+                                ></option>
+                            </select>
+                            <select id="prefecture" disabled>
+                                <option value="">都道府県を選択</option>
+                            </select>
+                            <div
+                                id="municipality-container"
+                                class="municipality-checkbox-container"
+                                style="display: none"
+                            ></div>
+                        </div>
+                    </div>
+
+                    <!-- 카테고리 -->
+                    <div class="filter-group">
+                        <label for="sub-category">カテゴリー</label>
+                        <select id="sub-category">
+                            <option value="">すべてのカテゴリー</option>
+                            <optgroup th:each="category : ${categories}" th:label="${category.name}">
+                                <option
+                                    th:each="subCategory : ${category.subCategories}"
+                                    th:value="${subCategory.id}"
+                                    th:text="${subCategory.name}"
+                                ></option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <!-- 가격 -->
+                    <div class="filter-group">
+                        <label for="price-range">価格</label>
+                        <input type="range" id="price-range" min="0" max="1000000" step="1000" value="1000000" />
+                        <div class="price-display">
+                            <span>0円</span>
+                            <span id="price-value">1,000,000円</span>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- 상품 -->
+                <section class="product-section">
+                    <!-- 상품 목록 헤더 -->
+                    <div class="product-header">
+                        <h2>おすすめ商品</h2>
+
+                        <div class="sort-controls">
+                            <label for="sort-by">並び替え:</label>
+                            <select id="sort-by">
+                                <option value="default_sort" selected>おすすめ順</option>
+                                <option value="modifiedDate_desc">最新順</option>
+                                <option value="viewCount_desc">人気順</option>
+                                <option value="likeCount_desc">お気に入り数順</option>
+                                <option value="price_asc">価格が安い順</option>
+                                <option value="price_desc">価格が高い順</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 상품 목록 -->
+                    <div class="product-grid"></div>
+
+                    <!-- 무한 스크롤 -->
+                    <div class="loader-container" style="display: none">
+                        <div class="loader"></div>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <script th:src="@{/js/main/banner.js}"></script>
+        <script th:inline="javascript">
+            // 서버에서 전달받은 전체 지역 데이터(JSON)를 JavaScript 변수에 저장
+            const allLocations = JSON.parse(/*[[${locationsJson}]]*/ "[]");
+        </script>
+        <script th:src="@{/js/main/main.js}"></script>
+        <script th:src="@{/js/transactions/transaction-flow.js}"></script>
+    </body>
+</html>

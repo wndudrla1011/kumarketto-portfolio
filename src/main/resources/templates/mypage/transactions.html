@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>クマケット | マイページ（取引履歴）</title>
+
+  <link rel="stylesheet" th:href="@{/css/common/main.css}" />
+  <link rel="stylesheet" th:href="@{/css/common/header.css}" />
+  <link rel="stylesheet" th:href="@{/css/common/mypage.css}" />
+  <link rel="stylesheet" th:href="@{/css/common/sidebar.css}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    .carousel{ position:relative; }
+    .rail{
+      display:flex; gap:var(--gap); overflow-x:auto; overflow-y:hidden; scroll-behavior:smooth;
+      padding:4px 2px 4px;
+      overscroll-behavior-inline:contain;
+      -webkit-overflow-scrolling:touch;
+    }
+    .rail::-webkit-scrollbar{ height:8px; }
+    .rail::-webkit-scrollbar-thumb{ background:#e9ded6; border-radius:999px; }
+
+    .card, .endcap{
+      flex:0 0 calc((100% - (var(--gap) * 2)) / 3);
+      min-width:200px;
+      background:#fff; border:1px solid var(--line); border-radius:10px; overflow:hidden;
+    }
+    .card{ display:flex; flex-direction:column; }
+    .thumb{ width:100%; height:150px; object-fit:cover; background:#f8f8f8; }
+    .meta{ padding:10px; display:flex; flex-direction:column; gap:6px; }
+    .name{ font-weight:600; font-size:14px; color:#222; line-height:1.3; }
+    .price{ font-weight:700; font-size:16px; color:#e63946; }
+    .minor{ font-size:12px; color:#555; display:flex; align-items:center; gap:4px; }
+    .minor i{ color:#ff6b00; } /* 위치 아이콘 주황색 */
+    .endcap{ display:flex; align-items:center; justify-content:center; text-align:center; color:var(--muted);
+      border:2px dashed var(--line); padding:10px; font-size:12.5px; }
+  </style>
+</head>
+<body>
+
+<div th:replace="fragments/header :: commonHeader"></div>
+
+<main class="page">
+  <div th:replace="fragments/sidebar :: commonSidebar"></div>
+
+  <section>
+    <!-- 판매 내역 -->
+    <div class="section">
+      <div class="section-head">
+        <h2>販売履歴</h2>
+        <a class="more" th:href="@{/myPage/sales}">もっと見る</a>
+      </div>
+
+      <div class="carousel">
+        <div class="rail" data-rail="sell">
+          <div th:if="${#lists.isEmpty(salesList)}" class="endcap">
+            まだ販売中/販売済みの商品がありません。
+          </div>
+
+          <div th:each="product : ${salesList}" class="card">
+            <img class="thumb" th:src="${product.imageUrl}" alt="">
+            <div class="meta">
+              <div class="name" th:text="${product.name}"></div>
+              <div class="price" th:text="${product.price + '円'}"></div>
+              <div class="minor">
+                <i class="fa-solid fa-location-dot"></i>
+                <span th:text="${product.regionName}"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="controlbar">
+          <button class="ctrl" data-prev="sell">‹ 前へ</button>
+          <button class="ctrl" data-next="sell">次へ ›</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 구매 내역 -->
+    <div class="section">
+      <div class="section-head">
+        <h2>購入履歴</h2>
+        <a class="more" th:href="@{/myPage/purchases}">もっと見る</a>
+      </div>
+
+      <div class="carousel">
+        <div class="rail" data-rail="buy">
+          <div th:if="${#lists.isEmpty(purchaseList)}" class="endcap">
+            まだ購入した商品がありません。
+          </div>
+
+          <div th:each="product : ${purchaseList}" class="card">
+            <img class="thumb" th:src="${product.imageUrl}" alt="">
+            <div class="meta">
+              <div class="name" th:text="${product.name}"></div>
+              <div class="price" th:text="${product.price + '円'}"></div>
+              <div class="minor">
+                <i class="fa-solid fa-location-dot"></i>
+                <span th:text="${product.regionName}"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="controlbar">
+          <button class="ctrl" data-prev="buy">‹ 前へ</button>
+          <button class="ctrl" data-next="buy">次へ ›</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  (function(){
+    function pageAmount(rail){ return rail.clientWidth; }
+    function updateState(rail, prevBtn, nextBtn){
+      const atStart = rail.scrollLeft <= 1;
+      const atEnd   = rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 1;
+      if(prevBtn) prevBtn.disabled = atStart;
+      if(nextBtn) nextBtn.disabled = atEnd;
+    }
+    ['sell','buy'].forEach(key=>{
+      const rail = document.querySelector(`.rail[data-rail="${key}"]`);
+      if(!rail) return;
+      const prevBtn = document.querySelector(`.ctrl[data-prev="${key}"]`);
+      const nextBtn = document.querySelector(`.ctrl[data-next="${key}"]`);
+      prevBtn?.addEventListener('click', ()=> rail.scrollBy({left: -pageAmount(rail), behavior:'smooth'}));
+      nextBtn?.addEventListener('click', ()=> rail.scrollBy({left:  pageAmount(rail), behavior:'smooth'}));
+      rail.addEventListener('scroll', ()=> updateState(rail, prevBtn, nextBtn));
+      window.addEventListener('resize', ()=> updateState(rail, prevBtn, nextBtn));
+      updateState(rail, prevBtn, nextBtn);
+    });
+  })();
+</script>
+</body>
+</html>

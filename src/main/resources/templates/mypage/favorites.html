@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>クマケット | お気に入りリスト</title>
+
+    <link rel="stylesheet" th:href="@{/css/common/main.css}" />
+    <link rel="stylesheet" th:href="@{/css/common/header.css}" />
+    <link rel="stylesheet" th:href="@{/css/common/mypage.css}" />
+    <link rel="stylesheet" th:href="@{/css/common/sidebar.css}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        .withdrawal-content {
+        padding: 12px;
+        line-height: 1.5;
+        font-size: 14px;
+        color: var(--text-color);
+
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* 중앙 정렬 */
+      }
+
+      /* p 태그와 form은 섹션 폭 기준 꽉 채우기 */
+      .withdrawal-content p,
+      .withdrawal-content form {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+
+      .withdrawal-content p { margin-bottom: 16px; }
+
+      .withdrawal-content .field {
+        margin-bottom: 14px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .withdrawal-content .field input[type="password"] {
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        font-size: 14px;
+      }
+
+      .withdrawal-content .field.checkbox {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center; /* 중앙정렬 추가 */
+        gap: 8px;
+      }
+
+      .withdrawal-content .actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 12px;
+        justify-content: center;
+      }
+
+      .withdrawal-content .actions .btn {
+        padding: 8px 14px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--text-color);
+        font-weight: 600;
+        text-align: center;
+      }
+
+      .withdrawal-content .actions .btn.primary {
+        background: var(--primary-color);
+        color: #fff;
+        border-color: var(--primary-color);
+      }
+
+      .withdrawal-content .actions .btn.primary:hover {
+        background: var(--primary-dark-color);
+      }
+
+      /* 섹션 기준폭에 맞추기 */
+      section.withdraw-section {
+        width: 640px;
+        max-width: 100%;
+        margin: 0 auto;
+        box-sizing: border-box;
+      }
+
+      .input:focus{ outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(255,138,101,.18); }
+      .danger{ color:#B00020; font-size:12.5px; }
+         .wishlist-grid { /* product-grid 대신 wishlist-grid로 클래스명 변경 */
+            display: grid;
+             grid-template-columns: repeat(3, 1fr); /* 한 줄에 3개 이상 보이도록 minmax 조정 */
+            gap: 16px; /* 카드 간 간격 */
+            padding: 16px 0; /* 상하 패딩 */
+        }
+
+        .wishlist-card { /* product-card 대신 wishlist-card로 클래스명 변경 */
+            background:#fff;
+            border:1px solid var(--border-color); /* main.css의 border-color 사용 */
+            border-radius:10px;
+            overflow:hidden;
+            display:flex;
+            flex-direction:column;
+            text-decoration:none;
+            color:var(--text-color);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .wishlist-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .wishlist-thumb {
+            width:100%;
+            height:100px; /* 이미지 높이 */
+            object-fit:cover;
+            background:#f0f0f0; /* 이미지가 없을 때 배경색 */
+            display: block;
+        }
+
+        .wishlist-meta {
+            padding:7px 9px;
+            display:grid;
+            gap:4px;
+        }
+        .wishlist-name {
+            font-weight:700;
+            font-size:13px; /* 글자 크기 조정 */
+            line-height:1.2;
+            color:var(--text-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .wishlist-price {
+            font-weight:800;
+            color:var(--primary-color); /* main.css의 primary-color 사용 */
+            font-size:14px; /* 글자 크기 조정 */
+        }
+        .wishlist-region { /* 지역 정보 스타일 */
+            font-size:11px; /* 글자 크기 조정 */
+            color:#777; /* var(--muted) 대신 명시적 색상 또는 변수 사용 */
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .wishlist-region .fas {
+            font-size: 10px; /* 아이콘 크기 조정 */
+            color: var(--primary-color);
+        }
+
+        /* 추가: 목록이 비었을 때 메시지 스타일 */
+        .empty-wishlist {
+            text-align: center;
+            padding: 50px 20px;
+            font-size: 1.1rem;
+            color: #666;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="fragments/header :: commonHeader"></div>
+
+<main class="page">
+    <div th:replace="fragments/sidebar :: commonSidebar"></div>
+
+    <section class="section">
+        <div class="section-head">
+            <h2>お気に入りリスト</h2>
+        </div>
+
+        <div th:if="${#lists.isEmpty(wishlistItems)}" class="empty-wishlist">
+            <p>お気に入りリストに商品がありません。</p>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(wishlistItems)}" class="wishlist-grid"> <a th:each="product : ${wishlistItems}" th:href="@{/product/detail/{pid}(pid=${product.pid})}" class="wishlist-card"> <img th:src="${product.imageUrl}" class="wishlist-thumb" alt="상품 이미지"/>
+            <div class="wishlist-meta">
+                <div class="wishlist-name" th:text="${product.name}">상품명</div>
+                <div class="wishlist-price" th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT') + '円'}">가격</div>
+                <div class="wishlist-region" th:if="${product.regionName != null}"> <i class="fas fa-map-marker-alt"></i>
+                    <span th:text="${product.regionName}">東京都 · 渋谷区</span>
+                </div>
+            </div>
+        </a>
+        </div>
+    </section>
+</main>
+</body>
+</html>

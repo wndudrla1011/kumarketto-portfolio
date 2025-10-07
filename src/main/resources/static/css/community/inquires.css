@@ -1,0 +1,459 @@
+/* =================================================== */
+/* inquires.css (문의게시판 목록)             */
+/* =================================================== */
+
+main.inquiry-container {
+    display: block;
+}
+
+/* --- 페이지 공통 레이아웃 --- */
+.inquiry-container {
+    width: 100%;
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 30px 40px;
+    box-shadow: 0 2px 8px var(--shadow-color);
+    margin: 0 auto;
+}
+
+.inquiry-header {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.inquiry-header h1 {
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+.inquiry-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+}
+
+.write-btn {
+    padding: 10px 20px;
+    background-color: var(--primary-color);
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.write-btn:hover {
+    background-color: var(--primary-dark-color);
+}
+
+.inquiry-title a {
+    font-weight: 500;
+    transition: color 0.2s ease-in-out;
+}
+
+.inquiry-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.inquiry-table th,
+.inquiry-table td {
+    padding: 15px 10px;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+.inquiry-table thead {
+    background-color: var(--light-gray);
+}
+
+.inquiry-table th {
+    font-weight: 500;
+    color: #555;
+    font-size: 0.9rem;
+}
+
+.inquiry-table tbody tr {
+    cursor: pointer;
+}
+
+.inquiry-table tbody tr:hover {
+    background-color: #fcfcfc;
+}
+
+.inquiry-table .col-id {
+    width: 8%;
+}
+
+.inquiry-table .col-title {
+    width: 42%;
+    text-align: left;
+}
+
+.inquiry-table .col-author {
+    width: 12%;
+}
+
+.inquiry-table .col-date {
+    width: 15%;
+}
+
+.inquiry-table .col-status {
+    width: 10%;
+}
+
+.inquiry-table .col-public {
+    width: 10%;
+}
+
+.inquiry-table .col-actions {
+    width: 100px;
+    vertical-align: middle;
+}
+
+.action-links {
+    display: flex;
+    flex-direction: column; /* 핵심: 자식 요소(a태그)들을 세로로 쌓음 */
+    align-items: center; /* 자식 요소들을 가로축 중앙에 정렬 */
+    justify-content: center; /* 자식 요소들을 세로축 중앙에 정렬 */
+    gap: 6px;
+}
+
+.action-links a {
+    display: inline-block; /* 너비/높이/패딩을 적용하기 위해 inline-block 사용 */
+    padding: 5px 12px;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    text-decoration: none;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    color: #555;
+    transition: all 0.2s ease-in-out;
+    white-space: nowrap;
+}
+
+.action-links a:hover {
+    color: var(--primary-dark-color);
+    border-color: #bbb;
+    text-decoration: underline;
+}
+
+.inquiry-view-table {
+    width: 100%;
+    border-top: 2px solid #333; /* 테이블 상단에 강조선 */
+    border-collapse: collapse;
+}
+
+.inquiry-view-table th,
+.inquiry-view-table td {
+    padding: 18px 15px; /* 내부 여백을 넉넉하게 */
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+.inquiry-view-table th {
+    background-color: var(--light-gray);
+    width: 160px; /* 제목 셀 너비 고정 */
+    text-align: center;
+    font-weight: 500;
+}
+
+.inquiry-view-table td {
+    text-align: left;
+}
+
+/* 내용(content) 셀 스타일 */
+.inquiry-view-table .content-cell {
+    min-height: 200px;
+    vertical-align: top;
+    line-height: 1.7;
+    padding-top: 25px;
+    padding-bottom: 25px;
+}
+
+/* 첨부파일 정보 */
+.attachment-info a {
+    color: var(--primary-color);
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+.attachment-info a:hover {
+    text-decoration: underline;
+}
+
+.attachment-info .fa-solid {
+    margin-right: 5px;
+}
+
+/* 답변 섹션 공통 */
+.reply-section {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid var(--border-color);
+}
+
+.reply-section h3 {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.reply-section h3 .fa-solid {
+    color: var(--primary-color);
+}
+
+/* 답변 목록 테이블 */
+.reply-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.reply-table td {
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.reply-table .reply-author {
+    width: 120px;
+    font-weight: bold;
+    text-align: center;
+    background-color: var(--light-gray);
+    color: #555;
+    vertical-align: top;
+}
+
+.reply-table .reply-content {
+    line-height: 1.7;
+}
+
+.reply-table .reply-actions {
+    width: 100px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* 답변 수정 폼 */
+.reply-edit-form textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    resize: vertical;
+}
+.reply-edit-form .form-actions {
+    padding-top: 10px;
+    border-top: none;
+    margin-top: 10px;
+}
+
+/* 답변 작성 폼 */
+#admin-reply-form textarea {
+    width: 100%;
+    min-height: 150px;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    resize: vertical;
+    font-size: 0.95rem;
+}
+
+#admin-reply-form textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 138, 101, 0.2);
+}
+
+/* --- 버튼 그룹 --- */
+.form-actions {
+    text-align: center;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+/* 모든 버튼의 공통 스타일 */
+.form-actions button {
+    padding: 12px 35px; /* 버튼 크기 (상하, 좌우 여백) */
+    border-radius: 8px; /* 버튼 모서리를 둥글게 */
+    font-weight: bold;
+    font-size: 1rem;
+    margin: 0 8px; /* 버튼 사이의 간격 */
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+/* 취소, 목록으로 등 보조 버튼 스타일 */
+.form-actions .btn-cancel {
+    background-color: #fff;
+    border: 1px solid #ccc; /* 회색 테두리 */
+    color: #555;
+}
+
+/* 보조 버튼에 마우스를 올렸을 때 효과 */
+.form-actions .btn-cancel:hover {
+    background-color: #f2f2f2;
+    border-color: #bbb;
+}
+
+/* 작성, 등록 등 주요 버튼 스타일 */
+.form-actions .btn-submit {
+    background-color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    color: #fff;
+}
+.form-actions .btn-submit:hover {
+    background-color: var(--primary-dark-color);
+    border-color: var(--primary-dark-color);
+}
+
+.inquiry-form {
+    margin-top: 20px;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.form-group input[type="text"],
+.form-group textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.form-group input[type="text"]:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 138, 101, 0.2);
+}
+
+.form-group textarea {
+    min-height: 250px;
+    resize: vertical; /* 사용자가 세로 크기만 조절 가능 */
+}
+
+/* 파일 첨부 input 스타일 */
+.form-group input[type="file"] {
+    font-size: 0.9rem;
+}
+
+/* 라디오 버튼 그룹 스타일 */
+.radio-group label {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 20px;
+    font-weight: normal;
+    font-size: 0.95rem;
+}
+
+.radio-group input[type="radio"] {
+    margin-right: 8px;
+    accent-color: var(--primary-color);
+}
+
+/* 버튼 그룹 */
+.form-actions {
+    text-align: center;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.form-actions button {
+    padding: 12px 35px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1rem;
+    margin: 0 8px;
+    transition: all 0.2s;
+}
+
+.form-actions .btn-submit {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.form-actions .btn-submit:hover {
+    background-color: var(--primary-dark-color);
+}
+
+.form-actions .btn-cancel {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    color: #555;
+}
+
+.form-actions .btn-cancel:hover {
+    background-color: #f2f2f2;
+}
+
+
+
+
+/* 페이지네이션 컨테이너 */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.pagination {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    gap: 5px;
+}
+
+.pagination li a {
+    display: block;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.pagination li a:hover {
+    background-color: #f5f5f5;
+}
+
+/* 현재 페이지 */
+.pagination li.active a {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+    cursor: default;
+}
+
+/* 비활성화된 버튼 (이전/다음) */
+.pagination li.disabled a {
+    color: #aaa;
+    pointer-events: none;
+    cursor: default;
+}
+
+
+.alert-error .close-btn:hover {
+    opacity: 1;
+}

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja-JP" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>ショップページ | クマケット</title>
+        <link rel="stylesheet" th:href="@{/css/common/main.css}" />
+        <link rel="stylesheet" th:href="@{/css/common/header.css}" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <link rel="stylesheet" th:href="@{/css/store/store.css}" />
+    </head>
+    <body th:data-user-no="${userNo}" th:data-is-owner="${isOwner}">
+        <div class="container">
+            <!-- Header, Store Profile, and Tabs are the same as before -->
+            <div th:replace="~{fragments/header :: commonHeader}"></div>
+
+            <!-- Store Profile -->
+            <section class="store-card" id="store-card"></section>
+
+            <!-- Tabs -->
+            <nav class="tabs" id="tabs">
+                <div class="tab active" data-key="items"><i class="fa-solid fa-bag-shopping"></i>商品</div>
+                <div class="tab" data-key="reviews"><i class="fa-regular fa-star"></i>レビュー</div>
+            </nav>
+
+            <!-- Products Panel -->
+            <section class="panel" id="panel-items">
+                <h2 class="panel-header">販売商品</h2>
+                <div class="panel-content">
+                    <div class="filters">
+                        <div class="filter-group">
+                            <select id="product-sort">
+                                <option value="modifiedDate,desc">新着順</option>
+                                <option value="price,asc">価格が安い順</option>
+                                <option value="price,desc">価格が高い順</option>
+                            </select>
+                        </div>
+                        <div class="filter-group filter-buttons">
+                            <button class="p-status active" data-status="">すべて</button>
+                            <button class="p-status" data-status="NEW">販売中</button>
+                            <button class="p-status" data-status="SOLDOUT">販売完了</button>
+                        </div>
+                    </div>
+                    <div class="grid" id="product-grid"></div>
+                </div>
+                <div class="loader" id="product-loader"></div>
+            </section>
+
+            <!-- Reviews Panel -->
+            <section class="panel" id="panel-reviews" style="display: none">
+                <h2 class="panel-header">ショップレビュー</h2>
+                <div class="panel-content">
+                    <div class="filters">
+                        <div class="filter-group">
+                            <select id="review-sort">
+                                <option value="createdDate,desc">新着順</option>
+                                <option value="score,desc">評価が高い順</option>
+                                <option value="score,asc">評価が低い順</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>
+                                <input type="checkbox" id="review-photo-only" />
+                                写真付きレビューのみ表示
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="sub-tabs">
+                        <button class="sub-tab active" data-role="SELLER">販売者レビュー</button>
+                        <button class="sub-tab" data-role="BUYER">購入者レビュー</button>
+                    </div>
+
+                    <div class="reviews" id="review-list"></div>
+                </div>
+                <div class="loader" id="review-loader"></div>
+            </section>
+        </div>
+
+        <script th:src="@{/js/store/store.js}"></script>
+        <script th:src="@{/js/main/main.js}"></script>
+    </body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Title</title>
+    </head>
+    <body th:data-user-no="${loginUserNo}">
+        <aside class="sidebar" th:fragment="commonSidebar">
+            <div class="sb-title">マイページ</div>
+            <nav class="nav">
+                <a th:href="@{/stores/{userNo}(userNo=${loginUserNo})}"> ストアへ移動 </a>
+
+                <details class="accordion" th:attr="open=${url == '/myPage/sales' or url == '/myPage/purchases'}">
+                    <summary>
+                        <a
+                            th:href="@{/myPage/transactions}"
+                            th:classappend="${url == '/myPage/transactions'} ? 'active'"
+                        >
+                            販売 / 購入 履歴
+                        </a>
+                    </summary>
+                    <div class="submenu">
+                        <a th:href="@{/myPage/sales}" th:classappend="${url == '/myPage/sales'} ? 'active'">
+                            販売履歴
+                        </a>
+                        <a th:href="@{/myPage/purchases}" th:classappend="${url == '/myPage/purchases'} ? 'active'">
+                            購入履歴
+                        </a>
+                    </div>
+                </details>
+
+                <a th:href="@{/myPage/profile}" th:classappend="${url == '/myPage/profile'} ? 'active'">
+                    個人情報の変更
+                </a>
+                <a th:href="@{/myPage/favorites}" th:classappend="${url == '/myPage/favorites'} ? 'active'">
+                    お気に入り
+                </a>
+                <a th:href="@{/myPage/inquiries}" th:classappend="${url == '/myPage/inquiries'} ? 'active'">
+                    お問い合わせ履歴
+                </a>
+                <a th:href="@{/myPage/reports}" th:classappend="${url == '/myPage/reports'} ? 'active'">
+                    通報 / ペナルティ履歴
+                </a>
+                <a th:href="@{/myPage/withdraw}" th:classappend="${url == '/myPage/withdraw'} ? 'active'"> 退会 </a>
+            </nav>
+        </aside>
+    </body>
+</html>

@@ -1,0 +1,123 @@
+:root{
+  --muted:#777;
+  --line:#EFE3D8;
+  --gap:12px;
+  --radius:12px;
+  --primary: #ff8a65;
+  --primary-dark: #e66a4a;
+}
+
+img{ max-width:100%; display:block; }
+
+/* ===== 레이아웃: 좌 카테고리 + 우 콘텐츠 ===== */
+.page{
+  max-width:1120px;
+  margin:16px auto;
+  padding:0 12px;
+  display:grid;
+  grid-template-columns: 200px minmax(0,1fr);
+  gap:14px;
+}
+@media (max-width: 980px){ .page{ grid-template-columns:1fr; } }
+
+/* =========================
+   섹션 폭 통일용
+   ========================= */
+.section {
+  width: 640px;               /* 고정폭 기준 */
+  max-width: 100%;            /* 화면보다 클 경우는 줄어듬 */
+  box-sizing: border-box;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 10px;
+  margin: 0 auto 12px auto;  /* 화면 중앙정렬 */
+}
+
+/* 섹션 헤드 */
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 4px;
+}
+
+.section-head h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.more {
+  font-size: 12px;
+  background: var(--primary);
+  color: #fff;
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+.more:hover { background: var(--primary-dark); }
+
+/* 섹션 내부 요소 기본 폭 */
+.section > * {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 컨트롤바 */
+.controlbar{ display:flex; justify-content:center; align-items:center; gap:8px; padding-top:4px; }
+.ctrl{
+  min-width:54px; height:30px; padding:0 10px; border-radius:999px;
+  border:1px solid var(--line); background:#fff; color:#2a2a2a; cursor:pointer; font-weight:700;
+  box-shadow:var(--shadow); font-size:12.5px;
+}
+.ctrl:hover{ border-color:var(--primary); color:var(--primary); }
+.ctrl[disabled]{ opacity:.35; cursor:not-allowed; }
+
+/* 반응형 */
+@media (max-width: 980px){
+  .card, .endcap{ flex-basis: calc((100% - var(--gap)) / 2); }
+  .thumb{ height:130px; }
+}
+@media (max-width: 560px){
+  .card, .endcap{ flex-basis: 100%; min-width: 84%; }
+  .thumb{ height:140px; }
+}
+
+/* ===== 사이드바 ===== */
+aside.sidebar {
+  position: sticky;
+  top: 70px;
+  height: fit-content;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 10px;
+}
+
+.sb-title { font-weight: 800; font-size: 15px; margin-bottom: 6px; }
+.nav { display: flex; flex-direction: column; gap: 6px; }
+.nav a, .nav button{
+  appearance: none; border: none; background: transparent; text-align: left; width: 100%;
+  padding: 7px 9px; border-radius: 9px; color: var(--text); cursor: pointer; font-size: 13px;
+}
+.nav a:hover, .nav button:hover{ background: #FFF5EF; }
+
+/* 아코디언 */
+details.accordion{ border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff; }
+details.accordion > summary{ list-style: none; cursor: pointer; padding: 8px 10px; font-weight: 500;
+  font-size: 13px; display: flex; justify-content: space-between; align-items: center; background: transparent; color: #444; transition: background 0.2s, color 0.2s;
+}
+details.accordion > summary:hover{ background: #fff5ef; }
+details.accordion > summary::after{ content: '▼'; font-size: 10px; transition: transform 0.3s ease; }
+details.accordion[open] > summary::after{ transform: rotate(180deg); }
+
+/* 서브메뉴 */
+.submenu{ border-top: 1px dashed var(--line); padding: 6px; display:flex; flex-direction: column; gap: 4px; }
+.submenu a{ display:block; padding:7px 9px; border-radius:8px; font-size:13px; color:#555; text-decoration:none; transition: background 0.2s; }
+.submenu a:hover{ background: #FFF5EF; }
+details.accordion > summary a.active, .nav > a.active, .submenu a.active{ font-weight:700; color:#000; }
+details.accordion > summary a{ flex:1; text-decoration:none; color:inherit; }
+details.accordion > summary a.active{ font-weight:700; color:#000; padding:7px 0; }

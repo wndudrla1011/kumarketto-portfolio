@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja-JP" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>ID検索 | クマケット</title>
+    <script th:src="@{/js/jquery-3.7.1.min.js}"></script>
+    <style>
+        :root {
+            --primary-color: #f5a365;  /* 살구 오렌지 */
+            --secondary-color: #e17055; /* 톤다운 오렌지 */
+        }
+        body {
+            background: #fff3e0; /* 은은한 연주황 배경 */
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .popup-card {
+            background: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 1rem;
+            color: #2d3436;
+        }
+        input[type="email"] {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+        button {
+            padding: 0.6rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        #checkBtn {
+            background: var(--primary-color);
+            color: #fff;
+            width: 100%;
+        }
+        #checkBtn:hover {
+            background: var(--secondary-color);
+        }
+        #closeBtn {
+            background: #b2bec3;
+            color: #fff;
+            margin-top: 1rem;
+            width: 100%;
+        }
+        #closeBtn:hover {
+            background: #636e72;
+        }
+        #result {
+            margin-top: 1rem;
+        }
+        #foundId {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+<div class="popup-card">
+    <div id="findIdForm">
+        <h2>ID検索</h2>
+        <input type="email" id="inputEmail" placeholder="メールアドレス">
+        <button id="checkBtn">確認</button>
+    </div>
+    <div id="result" style="display:none;">
+        <span id="foundId"></span>
+        <button id="closeBtn">閉じる</button>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    $(document).ready(function() {
+        $('#checkBtn').click(function() {
+
+            let email = $('#inputEmail').val().trim();
+            if(!email) {
+                alert('メールアドレスを入力してください');
+                return;
+            }
+
+            let emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                if(!emailPattern.test(email)) {
+                    alert('正しい形式で入力してください。');
+                    e.preventDefault();
+                return;
+            }
+
+            $.ajax({
+                url: /*[[@{/member/findId}]]*/,
+                type: 'POST',
+                data: { inputEmail: email },
+                success: function(data) {
+                    if(data.userId) {
+                        $('#findIdForm').hide();
+                        $('#foundId').text('ID: ' + data.userId);
+                        $('#result').show();
+                    } else {
+                        alert('該当するIDがありません。');
+                    }
+                },
+                error: function() { alert('サーバーエラー'); }
+            });
+        });
+        $('#closeBtn').click(function() {
+            window.close();
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+/* --- 전역 채팅 알림 스타일 --- */
+#notification-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1050; /* 다른 콘텐츠 위에 표시되도록 보장 */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.notification-toast {
+    width: 350px;
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    opacity: 0;
+    transform: translateX(100%);
+    animation: slideIn 0.5s forwards;
+}
+
+.notification-toast:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    transform: scale(1.02);
+}
+
+@keyframes slideIn {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+
+.notification-toast.closing {
+    animation: slideOut 0.5s forwards;
+}
+
+.notification-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    object-fit: cover;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.notification-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notification-nickname {
+    font-weight: 700;
+    font-size: 15px;
+    color: #212529;
+}
+
+.notification-time {
+    font-size: 12px;
+    color: #868e96;
+    flex-shrink: 0;
+}
+
+.notification-content {
+    font-size: 14px;
+    color: #495057;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 4px;
+}

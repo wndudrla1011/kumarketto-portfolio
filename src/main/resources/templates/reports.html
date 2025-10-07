@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja-JP" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>通報一覧</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" th:href="@{/css/common/main.css}" />
+    <link rel="stylesheet" th:href="@{/css/common/header.css}" />
+    <link rel="stylesheet" th:href="@{/css/common/footer.css}" />
+    <style>
+        .report-container { width: 100%; background-color: #fff; border-radius: 12px; padding: 30px 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin: 0 auto; }
+        .report-header h1 { font-size: 1.8rem; font-weight: bold; margin-bottom: 20px; }
+
+        .report-table { width: 100%; border-collapse: collapse; }
+        .report-table th, .report-table td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; }
+        .report-table th { background-color: #f9f9f9; font-weight: 500; color: #555; }
+        .report-table tbody tr { cursor: pointer; transition: background-color 0.2s; }
+        .report-table tbody tr:hover { background-color: #f7f7f7; }
+
+        .status { padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; display: inline-block; min-width: 70px; text-align: center; }
+        .status.PENDING { background-color: #ffecec; color: #d93025; border: 1px solid #f5c6c6; }
+        .status.RESOLVED { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+
+        .report-filters { margin-bottom: 20px; text-align: right; }
+        .report-filters select { padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.95rem; }
+
+        .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 25px; }
+        .pagination a { display: inline-block; padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; background-color: #fff; color: #333; text-decoration: none; transition: all 0.2s; }
+        .pagination a:hover { background-color: #f2f2f2; }
+        .pagination a.active { background-color: #ff8c50; color: #fff; font-weight: bold; }
+        .pagination a.disabled { pointer-events: none; opacity: 0.5; cursor: default; }
+
+        .report-separator {
+    border: none;
+    border-top: 1px solid #ddd; /* 연한 회색 */
+    margin: 20px 0; /* 위아래 간격 */
+}
+
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+
+<main class="main-content">
+    <section class="report-container">
+        <div class="report-header">
+            <h1>通報一覧</h1>
+        </div>
+        <hr class="report-separator">
+        <div class="report-filters">
+            <form th:action="@{/report/reports}" method="get">
+                <select name="status" onchange="this.form.submit()">
+                    <option value="ALL" th:selected="${status == 'ALL'}">全体</option>
+                    <option value="PENDING" th:selected="${status == 'PENDING'}">未解決のみ</option>
+                    <option value="RESOLVED" th:selected="${status == 'RESOLVED'}">解決のみ</option>
+                </select>
+            </form>
+        </div>
+
+        <table class="report-table">
+            <thead>
+            <tr>
+                <th>通報番号</th>
+                <th>通報者ID</th>
+                <th>通報対象</th>
+                <th>通報理由</th>
+                <th>通報日</th>
+                <th>対応状況</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="report : ${reportList}" th:data-report-id="${report.reportId}" class="clickable-row">
+                <td th:text="${report.reportId}"></td>
+                <td th:text="${report.userId}"></td>
+                <td th:text="${#strings.length(report.title) > 8} ? ${report.title.substring(0,8)} + '...' : ${report.title}"></td>
+                <td th:text="${report.reportReason.reportReason}"></td>
+                <td th:text="${#temporals.format(report.createdDate, 'yyyy-MM-dd')}"></td>
+                <td th:text="${report.reportStatus.reportStatus}"></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- 페이지네이션 -->
+        <div class="pagination">
+            <a th:href="@{/report/reports(page=${startBlockPage - 1 < 0 ? 0 : startBlockPage - 1}, status=${status})}"
+               th:classappend="${isFirst} ? 'disabled'">&laquo;</a>
+
+            <span th:each="i : ${#numbers.sequence(startBlockPage, endBlockPage)}">
+                <a th:href="@{/report/reports(page=${i}, status=${status})}"
+                   th:text="${i + 1}"
+                   th:classappend="${i == currentPage} ? 'active'"></a>
+            </span>
+
+            <a th:href="@{/report/reports(page=${endBlockPage + 1 >= totalPages ? totalPages - 1 : endBlockPage + 1}, status=${status})}"
+               th:classappend="${isLast} ? 'disabled'">&raquo;</a>
+        </div>
+
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: commonFooter}"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.clickable-row').forEach(row => {
+            row.addEventListener('click', () => {
+                const reportId = row.dataset.reportId;
+                const width = 800;
+                const height = 600;
+                const left = (screen.width / 2) - (width / 2);
+                const top = (screen.height / 2) - (height / 2);
+                window.open(`/report/reportDetail?reportId=${reportId}`, 'reportDetailWin', `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`);
+            });
+        });
+    });
+</script>
+</body>
+</html>

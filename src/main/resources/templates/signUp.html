@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ja-JP" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>会員登録</title>
+    <script th:src="@{/js/jquery-3.7.1.min.js}"></script>
+    <style>
+        :root {
+            --primary: #f58a65;
+            --primary-dark: #e87a4f;
+            --line: #f58a65;
+            --button-default-bg: #ccc;
+            --button-default-color: #555;
+            --button-active-bg: #FF8614;
+            --button-active-color: #fff;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .signup-container {
+            background: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            padding: 2rem;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+
+        td {
+            padding: 10px 0;
+            vertical-align: middle;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        input::placeholder {
+            color: #999;
+        }
+
+        .input-with-btn {
+            display: flex;
+            gap: 6px;
+        }
+
+        .input-with-btn button {
+         border: 1px solid #ccc;
+         border-radius: 6px;
+         padding: 0 12px;
+         background: #ccc;
+        color: #555;
+        cursor: pointer;
+        font-weight: 500;
+        min-width: 90px;
+         transition: none;
+        }
+
+        /* 마우스를 올렸을 때 */
+        .input-with-btn button:hover {
+        background: var(--button-active-bg); /* 주황 */
+        color: var(--button-active-color);   /* 흰 글씨 */
+        border-color: var(--button-active-bg);
+        }
+
+        .birth-selects {
+            display: flex;
+            gap: 8px;
+        }
+        .input-with-btn button.active {
+            background: var(--button-active-bg);
+            color: var(--button-active-color);
+            border-color: var(--button-active-bg);
+        }
+
+        button.submit-btn {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            background: var(--primary);
+            color: #fff;
+            border: 1px solid var(--primary);
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        button.cancel-btn {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            background: #f5f5f5;
+            color: #555;
+            border: 1px solid var(--line);
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .buttons {
+    display: flex;
+    justify-content: flex-end; /* 오른쪽 정렬 */
+    gap: 8px;
+    margin-top: 10px;
+}
+       button.submit-btn, button.cancel-btn {
+         font-size: 12px;
+         border-radius: 6px;
+         width: 50px;
+         height: 28px;
+         line-height: 28px;
+         padding: 0;
+         text-align: center;
+         box-sizing: border-box;
+
+}
+    </style>
+</head>
+<body>
+<div class="signup-container">
+    <h2>会員登録</h2>
+    <form th:action="@{/member/signUp}" method="post" onsubmit="return validateSignUpForm()">
+        <table>
+            <tr>
+                <td>ID</td>
+                <td colspan="2">
+                    <div class="input-with-btn">
+                        <input type="text" id="userId" name="userId" placeholder="IDを入力してください。" required>
+                        <button type="button" id="userIdDupCheckBtn">重複確認</button>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>パスワード</td>
+                <td colspan="2">
+                    <input type="password" id="password" name="password" placeholder="パスワード入力" required>
+                </td>
+            </tr>
+            <tr>
+                <td>パスワード確認</td>
+                <td colspan="2">
+                    <input type="password" id="passwordConfirm" name="passwordConfirm" placeholder="パスワード再入力" required>
+                </td>
+            </tr>
+            <tr>
+                <td>生年月日</td>
+                <td colspan="2">
+                    <div class="birth-selects">
+                        <select name="year">
+                            <option value="">年</option>
+                            <option th:each="year : ${#numbers.sequence(T(java.time.Year).now().value,1920,-1)}"
+                                    th:value="${year}" th:text="${year}"></option>
+                        </select>
+                        <select name="month">
+                            <option value="">月</option>
+                            <option th:each="month : ${#numbers.sequence(1,12)}"
+                                    th:value="${month}" th:text="${month}"></option>
+                        </select>
+                        <select name="day">
+                            <option value="">日</option>
+                            <option th:each="day : ${#numbers.sequence(1,31)}"
+                                    th:value="${day}" th:text="${day}"></option>
+                        </select>
+                    </div>
+                </td>
+            </tr>
+                <td>メールアドレス</td>
+                <td colspan="2">
+                    <div class="input-with-btn">
+                        <input type="email" id="email" name="email" placeholder="example@domain.com" required>
+                        <button type="button" id="emailDupCheckBtn">重複確認</button>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>電話番号</td>
+                <td colspan="2">
+                    <input type="tel" id="phone" name="phone" placeholder="携帯電話番号を入力してください">
+                </td>
+            </tr>
+            <tr>
+                <td>ニックネーム</td>
+                <td colspan="2">
+                    <div class="input-with-btn">
+                        <input type="text" id="nickname" name="nickname" placeholder="ニックネーム">
+                        <button type="button" id="nicknameDupCheckBtn">重複確認</button>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+            <div class="buttons" style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">
+                <button type="button" class="cancel-btn" onclick="window.location.href='/'">取消</button>
+                <button type="submit" class="submit-btn">登録</button>
+            </div>
+    </form>
+</div>
+
+<script th:inline="javascript">
+    let userIdChecked = false;
+    let emailChecked = false;
+    let nicknameChecked = false;
+
+    function validateSignUpForm() {
+        const userId = $('#userId').val().trim();
+        const newPw = $('#password').val().trim();
+        const confirmPw = $('#passwordConfirm').val().trim();
+        const email = $('#email').val().trim();
+        const nickname = $('#nickname').val().trim();
+        const phone = $('#phone').val().trim();
+
+        if (!userId) { alert('IDを入力してください。'); return false; }
+        if (!/^[a-zA-Z0-9]{5,20}$/.test(userId)) {
+            alert('IDは英数字を組み合わせた5～20桁の半角文字でご入力ください。');
+            return false;
+        }
+
+        if(!newPw) { alert('新しいパスワードを入力してください。'); return false; }
+        if(newPw && !confirmPw) { alert('パスワードを再度入力してください。'); return false; }
+        if(newPw !== confirmPw) { alert('パスワードが一致しません。'); return false; }
+
+        if(!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*?_])[A-Za-z\d!@#$%^&*?_]{8,12}$/.test(newPw)) {
+            alert('パスワードは英字（a～z、A～Z）、数字（0～9）、記号の3種類を組合せた8～12桁の半角文字でご入力ください。');
+            return false;
+        }
+
+        if(!email) { alert('メールアドレスを入力してください'); return false; }
+        if(!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+            alert('メールアドレスを正しい形式で入力してください。');
+            return false;
+        }
+
+        if(phone && !/^0[789]0-?\d{4}-?\d{4}$/.test(phone)) {
+            alert('電話番号を正しい形式で入力してください。');
+            return false;
+        }
+
+        if(!userIdChecked) { alert('IDの重複チェックをしてください。'); return false; }
+        if(!emailChecked) { alert('メールアドレスの重複チェックをしてください。'); return false; }
+        if(nickname && !nicknameChecked) { alert('ニックネームの重複チェックをしてください。'); return false; }
+
+        return true;
+    }
+
+    $(document).ready(function(){
+
+        $('#userIdDupCheckBtn').click(function() {
+            const userId = $('#userId').val().trim();
+            if(!userId) { alert('IDを入力してください。'); return; }
+            if (!/^[a-zA-Z0-9]{5,20}$/.test(userId)) {
+                alert('IDは英数字を組み合わせた5～20桁の半角文字でご入力ください。');
+                return;
+            }
+
+            $.ajax({
+                url: [[@{/member/userIdDupCheck}]],
+                type: 'POST',
+                data: {userId: userId},
+                success: function(exists) {
+                    if(exists) {
+                        alert('入力されたIDは既にご登録されています。他のIDを入力してください。');
+                    } else {
+                        alert('このIDは利用可能です。');
+                        userIdChecked = true;
+                    }
+                },
+                error: function() { alert('サーバーエラー'); }
+            });
+        });
+
+
+        $('#emailDupCheckBtn').click(function() {
+            const email = $('#email').val().trim();
+            if(!email) { alert('メールアドレスを入力してください'); return; }
+            if(!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+                alert('メールアドレスを正しい形式で入力してください。');
+                return;
+            }
+
+            $.ajax({
+                url: [[@{/member/emailDupCheck}]],
+                type: 'POST',
+                data: {email: email},
+                success: function(exists) {
+                    if(exists) {
+                        alert('入力されたメールアドレスは既にご登録されています。他のメールアドレスを入力してください。');
+                    } else {
+                        alert('このメールアドレスは利用可能です。');
+                        emailChecked = true;
+                    }
+                },
+                error: function() { alert('サーバーエラー'); }
+            });
+        });
+
+
+        $('#nicknameDupCheckBtn').click(function() {
+            const nickname = $('#nickname').val().trim();
+            if(!nickname) { alert('ニックネームを入力してください。'); return; }
+
+            $.ajax({
+                url: [[@{/member/nicknameDupCheck}]],
+                type: 'POST',
+                data: {nickname: nickname},
+                success: function(exists) {
+                    if(exists) {
+                        alert('入力されたニックネームは既にご登録されています。他のニックネームを入力してください。');
+                    } else {
+                        alert('このニックネームは利用可能です。');
+                        nicknameChecked = true;
+                    }
+                },
+                error: function() { alert('サーバーエラー'); }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
